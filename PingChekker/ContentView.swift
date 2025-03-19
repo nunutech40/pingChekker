@@ -14,17 +14,20 @@ struct ContentView: View {
     
     var body: some View {
         VStack(spacing: 20) {
-            Text("Ping Strength Checker")
+            Text("Pemantau Kecepetan Internetmu")
                 .font(.title)
+                .fontWeight(.bold)
+            Text("Ping Checker Strength 1.0.0")
                 .fontWeight(.bold)
             
             Text("Rata-rata Latensi: \(pingChecker.averageLatency)")
-                .font(.headline)
+                .font(.system(size: 12, weight: .light))
             
             Text(pingChecker.statusMessage)
-                .font(.body)
+                .font(.system(size: 14, weight: .medium))
                 .multilineTextAlignment(.center)
                 .padding()
+            
             
             Spacer()
         }

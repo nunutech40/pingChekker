@@ -1,10 +1,16 @@
 //
 //  PingStrengthChecker.swift
 //  PingChekker
+//  Class yang digunakan untuk init object PingStrengthChecker
+//  Berguna untuk mengecek koneksi internet dengan inputan data ping to google / 8.8.8.8
+//  dan return berupa message
 //
 //  Created by Nunu Nugraha on 16/03/25.
 //
 
+// Algoritma Ping Checker
+// 1. Lakukan ping menggunakan modul SimplePing milik Apple Developer, dilakukan saat init
+// 2.
 import Foundation
 
 class PingStrengthChecker: NSObject, SimplePingDelegate, ObservableObject {
@@ -27,7 +33,6 @@ class PingStrengthChecker: NSObject, SimplePingDelegate, ObservableObject {
     override init() {
         super.init()
         self.startContinuousPing()
-        print("cekkkk")
     }
     
     deinit {
@@ -36,6 +41,18 @@ class PingStrengthChecker: NSObject, SimplePingDelegate, ObservableObject {
         refreshTimer?.invalidate()
     }
     
+    // Fungsi startContinpusPing -> melakukan initialize SimplePing object dari modul SimplePing dan asign ke variable pinger
+    // Input -> input constant dari hostname (google / 8.8.8.8)
+    // Proses:
+    // 1. Init Simple ping dg hostname dari variable hostname(isinya sudah ditentukan di init variable hostname)
+    // 2. object pinger melakukan delegate dari parent PingStrengthChecker ke child class yaitu SimplePing
+    //  -> SimplePing adalah object yg meng initiate Protocol SimplePingDelegate
+    //  -> Function SimplePingDelegate yang di run di SimplePing akan dikirim ke Parent yaitu class PingStrengthChecker, karena sudah meng extends Protocol PingStrengthChecker
+    //  -> Perubahan yang terjadi di SimplePing pada function2 dari protocol SimplePingDelegate, bisa di detect di PingStrengthChecker, pada function(simplePing distart, didreceive, diderror)
+    // 3. run function start pada variable object pinger
+    // 4. run schedule utk interval 10 detik dari refresh interfal
+    // 5. lakukan refreshStatus setiap interval 10 detik dari scheduler
+    // Output -> Void -> tetapi merubah variable object pinger dg meng initilizenya dg start, dan melakukan refresh(riset initialize Simple ping dg hostname yg ditentukan)
     private func startContinuousPing() {
         pinger = SimplePing(hostName: hostName)
         pinger?.delegate = self
@@ -47,6 +64,14 @@ class PingStrengthChecker: NSObject, SimplePingDelegate, ObservableObject {
         }
     }
     
+    // Fungsi sendPing -> Melakukan Ping
+    // Input -> hostAddress / hostName (yg sudah di simpan di dalam object pinger)
+    // Proses:
+    // 1. Pastikan ping count < dari cycle (10 kali per ping) dan per ping adalah 1 detik, copas pinger(global) ke pinger(lokal, let pinger), dan host address tidak null
+    // 2. Simpan data tanggal setiap kali melakukan Ping (utk memantau date setiap melakukan pin)
+    // 3. lakukan ping dg function ping pada object pinger
+    // 4. pantau ping counter dg iterasi setiap kali ping
+    // Output -> return void -> tapi mempengaruhi variable sendDate, pingCount dan object pinger
     private func sendPing() {
         guard pingCount < maxPingsPerCycle, let pinger = pinger, pinger.hostAddress != nil else { return }
         sendDate = Date()
@@ -54,6 +79,21 @@ class PingStrengthChecker: NSObject, SimplePingDelegate, ObservableObject {
         pingCount += 1
     }
     
+    // Fungsi refreshStatus -> reset status pingtimer, pingresult, ping count dan memulai ulang sendping
+    //                      -> mengubah value variable averageLatency, statusmessage,
+    //                      -> siklus sendping yang kedua dan seterusnya dilakukan di refreshstatus
+    //                      -> siklus refreshstatus dilakukan setiap 10 detik yang di init di init func -> startContinuousPing
+    // Input ->
+    // 1. average latency get form average ping
+    // 2. status message get from average ping
+    // Process:
+    // 1. invalidate pingtimer (reset)
+    // 2. assign average latency with condition form averageping
+    // 3. assign statusMessage with condition from averageping
+    // 4. remove all ping result (reset)
+    // 5. reset ping count
+    // 6. init ulang sceduler untuk sendping
+    // Output -> Return void
     private func refreshStatus() {
         pingTimer?.invalidate()
         pingTimer = nil
@@ -90,7 +130,7 @@ class PingStrengthChecker: NSObject, SimplePingDelegate, ObservableObject {
         case 100..<200:
             statusMessage = "Sedang (\(averagePing) ms)\nMasih bisa akses Grok, tapi slow respon."
         case 200...:
-            statusMessage = "Lemah (\(averagePing) ms)\nGak usah chattan daripada gebetanmu merasa kamu slowrespon."
+            statusMessage = "Lemah (\(averagePing) ms)\nGak usah chattan, lemot. Ntar dikira slow respon"
         default:
             statusMessage = "Koneksi bermasalah atau tidak terdeteksi (\(averagePing) ms)"
         }
@@ -99,6 +139,7 @@ class PingStrengthChecker: NSObject, SimplePingDelegate, ObservableObject {
     // MARK: - SimplePingDelegate Methods
     func simplePing(_ pinger: SimplePing, didStartWithAddress address: Data) {
         if let hostAddress = pinger.hostAddress {
+            print("cell hostAddress: \(hostAddress)")
             let hostAddressString = hostAddress.map { String(format: "%02x", $0) }.joined()
             print("Host address: \(hostAddressString)")
         } else {
@@ -108,6 +149,7 @@ class PingStrengthChecker: NSObject, SimplePingDelegate, ObservableObject {
         DispatchQueue.main.async { [weak self] in
             self?.pingTimer = Timer.scheduledTimer(withTimeInterval: 1.0, repeats: true) { [weak self] _ in
                 self?.sendPing()
+                print("cek datanya here didstart")
             }
         }
     }
