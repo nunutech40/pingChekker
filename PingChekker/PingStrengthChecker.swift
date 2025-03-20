@@ -87,6 +87,14 @@ class PingStrengthChecker: NSObject, SimplePingDelegate, ObservableObject {
         pingCount += 1
     }
     
+    // init ping dibutuhkan cepat, jadi hitung average cukup dari 5 ping
+    private func initPing() {
+        guard pingCount < 5, let pinger = pinger, pinger.hostAddress != nil else { return }
+        sendDate = Date()
+        pinger.send(with: nil)
+        pingCount += 1
+    }
+    
     // Fungsi refreshStatus -> reset status pingtimer, pingresult, ping count dan memulai ulang sendping
     //                      -> mengubah value variable averageLatency, statusmessage,
     //                      -> siklus sendping yang kedua dan seterusnya dilakukan di refreshstatus
@@ -165,17 +173,10 @@ class PingStrengthChecker: NSObject, SimplePingDelegate, ObservableObject {
     // 2. run sendPing di dalam scheduler
     // Output -> void, merubah variable pingtimer
     func simplePing(_ pinger: SimplePing, didStartWithAddress address: Data) {
-        if let hostAddress = pinger.hostAddress {
-            print("cell hostAddress: \(hostAddress)")
-            let hostAddressString = hostAddress.map { String(format: "%02x", $0) }.joined()
-            print("Host address: \(hostAddressString)")
-        } else {
-            print("Host address: nil")
-        }
         // Mulai pengiriman ping setelah hostAddress tersedia
         DispatchQueue.main.async { [weak self] in
             self?.pingTimer = Timer.scheduledTimer(withTimeInterval: 1.0, repeats: true) { [weak self] _ in
-                self?.sendPing()
+                self?.initPing()
             }
         }
     }
