@@ -23,6 +23,7 @@ class PingStrengthChecker: NSObject, SimplePingDelegate, ObservableObject {
     // Published properties untuk update UI
     // Variable observable object utk memantau status message dan average latency dari UI
     @Published var statusMessage: String = "Memulai pengujian..."
+    @Published var categoryAveragePing: String = ""
     @Published var averageLatency: String = "N/A"
     
     // Variable Konfigurasi
@@ -134,17 +135,24 @@ class PingStrengthChecker: NSObject, SimplePingDelegate, ObservableObject {
     // Output -> Void, merubah value pada variable status message
     private func categorizePingStrength(averagePing: Double) {
         switch averagePing {
-        case 0..<50:
-            statusMessage = "Sangat baik (\(averagePing) ms)\nCoba download database NASA!"
-        case 50..<100:
-            statusMessage = "Cukup Baik (\(averagePing) ms)\nBisa untuk nonton NETFLIX tetapi mungkin akan buffering di kualitas tinggi."
-        case 100..<200:
-            statusMessage = "Sedang (\(averagePing) ms)\nMasih bisa akses Grok, tapi slow respon."
-        case 200...:
-            statusMessage = "Lemah (\(averagePing) ms)\nGak usah chattan, lemot. Ntar dikira slow respon"
+        case 0..<21:
+            categoryAveragePing = "elite" // Hampir tidak ada lag, ideal untuk gaming kompetitif.
+        case 21..<51:
+            categoryAveragePing = "good" // Responsif dan cocok untuk streaming, video call, dan gaming.
+        case 51..<101:
+            categoryAveragePing = "good enough" //  Masih layak untuk gaming, tetapi mungkin terasa delay dalam game FPS atau MOBA.
+        case 101..<201:
+            categoryAveragePing = "enough" // Masih bisa browsing dan streaming, tetapi ada delay dalam komunikasi real-time.
+        case 201..<501:
+            categoryAveragePing = "slow" // Bisa digunakan untuk browsing dan chatting, tetapi akan terasa delay signifikan.
+        case 500...:
+            categoryAveragePing = "unplayable" // Hampir tidak bisa digunakan untuk aktivitas interaktif, hanya cocok untuk browsing dasar.
         default:
-            statusMessage = "Koneksi bermasalah atau tidak terdeteksi (\(averagePing) ms)"
+            categoryAveragePing = "no connection"
         }
+        
+        // Ambil message dari random message
+        statusMessage = PingMessages.getRandomMessage(for: categoryAveragePing)
     }
     
     // MARK: - SimplePingDelegate Methods

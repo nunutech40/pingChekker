@@ -20,9 +20,12 @@ struct ContentView: View {
             Text("Ping Checker Strength 1.0.0")
                 .fontWeight(.bold)
             
+            
             Text("Rata-rata Latensi: \(pingChecker.averageLatency)")
                 .font(.system(size: 12, weight: .light))
             
+            Text("\(pingChecker.categoryAveragePing.capitalized)")
+                .font(.system(size: 12, weight: .medium))
             Text(pingChecker.statusMessage)
                 .font(.system(size: 14, weight: .medium))
                 .multilineTextAlignment(.center)
