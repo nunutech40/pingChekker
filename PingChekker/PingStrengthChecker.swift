@@ -17,6 +17,7 @@
 // 6. Lakukan siklus ping terus menerus hingga applikasi di matikan
 
 import Foundation
+import SwiftUICore
 
 class PingStrengthChecker: NSObject, SimplePingDelegate, ObservableObject {
     
@@ -24,6 +25,7 @@ class PingStrengthChecker: NSObject, SimplePingDelegate, ObservableObject {
     // Variable observable object utk memantau status message dan average latency dari UI
     @Published var statusMessage: String = "Memulai pengujian..."
     @Published var categoryAveragePing: String = ""
+    @Published var statusColor: Color = .gray
     @Published var averageLatency: String = "N/A"
     
     // Variable Konfigurasi
@@ -144,19 +146,26 @@ class PingStrengthChecker: NSObject, SimplePingDelegate, ObservableObject {
     private func categorizePingStrength(averagePing: Double) {
         switch averagePing {
         case 0..<21:
-            categoryAveragePing = "elite" // Hampir tidak ada lag, ideal untuk gaming kompetitif.
+            categoryAveragePing = "elite"
+            statusColor = .green
         case 21..<51:
-            categoryAveragePing = "good" // Responsif dan cocok untuk streaming, video call, dan gaming.
+            categoryAveragePing = "good"
+            statusColor = Color.green.opacity(0.8)
         case 51..<101:
-            categoryAveragePing = "good enough" //  Masih layak untuk gaming, tetapi mungkin terasa delay dalam game FPS atau MOBA.
+            categoryAveragePing = "good enough"
+            statusColor = .yellow
         case 101..<201:
-            categoryAveragePing = "enough" // Masih bisa browsing dan streaming, tetapi ada delay dalam komunikasi real-time.
+            categoryAveragePing = "enough"
+            statusColor = .orange
         case 201..<501:
-            categoryAveragePing = "slow" // Bisa digunakan untuk browsing dan chatting, tetapi akan terasa delay signifikan.
+            categoryAveragePing = "slow"
+            statusColor = .red
         case 500...:
-            categoryAveragePing = "unplayable" // Hampir tidak bisa digunakan untuk aktivitas interaktif, hanya cocok untuk browsing dasar.
+            categoryAveragePing = "unplayable"
+            statusColor = .purple
         default:
             categoryAveragePing = "no connection"
+            statusColor = .gray
         }
         
         // Ambil message dari random message
