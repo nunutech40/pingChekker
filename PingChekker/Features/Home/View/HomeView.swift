@@ -10,10 +10,10 @@ import SwiftUI
 struct HomeView: View {
     
     @StateObject private var viewModel = HomeViewModel()
-
+    
     var body: some View {
         ZStack {
-            // 1. Background Ambient Glow (Subtle)
+            // 1. Background Ambient Glow
             // Memberikan bias warna di background sesuai status (Merah/Hijau/dll)
             viewModel.statusColor
                 .opacity(0.1)
@@ -23,7 +23,7 @@ struct HomeView: View {
             // 2. Main Content (Horizontal Layout)
             HStack(spacing: 0) {
                 
-                // --- KOLOM KIRI: VISUAL (Speedometer) ---
+                // --- KOLOM KIRI: VISUAL (SPEEDOMETER) ---
                 ZStack {
                     // Speedometer Visual
                     SpeedometerView(
@@ -50,17 +50,17 @@ struct HomeView: View {
                 }
                 .frame(width: 160) // Lebar area kiri fix
                 .padding(.leading, 10)
-
+                
                 // Divider Halus (Pemisah Visual)
                 Rectangle()
                     .fill(Color.primary.opacity(0.05))
                     .frame(width: 1)
                     .padding(.vertical, 30)
                 
-                // --- KOLOM KANAN: DETAIL STATUS ---
-                VStack(alignment: .leading, spacing: 6) {
+                // --- KOLOM KANAN: DETAIL STATUS & KUALITAS ---
+                VStack(alignment: .leading, spacing: 0) {
                     
-                    // Header Kecil
+                    // 1. Header Kecil
                     HStack(spacing: 6) {
                         Circle()
                             .fill(viewModel.statusColor)
@@ -71,40 +71,68 @@ struct HomeView: View {
                             .font(.system(size: 9, weight: .bold))
                             .tracking(1.5)
                             .foregroundColor(.secondary)
+                        
+                        Spacer()
+                        
+                        // Session Avg Kecil di pojok kanan atas (buat yang kepo)
+                        Text(viewModel.sessionAvgText)
+                            .font(.system(size: 9, weight: .medium))
+                            .foregroundColor(.secondary.opacity(0.7))
                     }
                     .padding(.top, 4)
+                    .padding(.bottom, 15)
                     
                     Spacer()
                     
-                    // Status Besar (ELITE / LAG)
+                    // 2. Status Besar (Latency Category)
+                    // Ini menunjukkan "Kecepatan"
                     Text(viewModel.categoryText.uppercased())
                         .font(.system(size: 26, weight: .black, design: .default))
                         .foregroundColor(viewModel.statusColor)
                         .shadow(color: viewModel.statusColor.opacity(0.2), radius: 4, x: 0, y: 2)
                         .lineLimit(1)
-                        .minimumScaleFactor(0.8) // Kecilin dikit kalau teks kepanjangan
+                        .minimumScaleFactor(0.8)
                         .animation(.spring(), value: viewModel.categoryText)
                     
-                    // Message Pill (Keterangan)
-                    HStack(alignment: .top, spacing: 8) {
-                        Image(systemName: getIconForStatus(category: viewModel.categoryText))
-                            .font(.system(size: 14))
-                            .foregroundColor(viewModel.statusColor)
-                            .padding(.top, 2)
+                    // Pesan Fun (Latency)
+                    Text(viewModel.statusMessage)
+                        .font(.system(size: 10, weight: .medium))
+                        .foregroundColor(.secondary)
+                        .lineLimit(1)
+                        .padding(.bottom, 12)
+                    // PERBAIKAN DISINI: Menggunakan .easeInOut bukan .opacity
+                        .animation(.easeInOut, value: viewModel.statusMessage)
+                    
+                    // 3. Network Health Card (Kualitas & Rekomendasi)
+                    // Ini menunjukkan "Kestabilan" & Saran Aktivitas
+                    VStack(alignment: .leading, spacing: 6) {
+                        // Judul Kondisi (misal: "Sangat Stabil")
+                        HStack(spacing: 6) {
+                            Image(systemName: viewModel.recommendationIcon)
+                                .font(.system(size: 12, weight: .bold))
+                            
+                            Text(viewModel.connectionCondition)
+                                .font(.system(size: 11, weight: .bold))
+                        }
+                        .foregroundColor(viewModel.recommendationColor)
                         
-                        Text(viewModel.statusMessage)
-                            .font(.system(size: 11, weight: .medium))
-                            .foregroundColor(.primary.opacity(0.85))
+                        // Isi Rekomendasi (Saran Teknis)
+                        Text(viewModel.connectionRecommendation)
+                            .font(.system(size: 10, weight: .regular))
+                            .foregroundColor(.primary.opacity(0.8))
                             .lineLimit(3) // Maksimal 3 baris
                             .fixedSize(horizontal: false, vertical: true)
+                            .lineSpacing(2)
                     }
                     .padding(10)
+                    .frame(maxWidth: .infinity, alignment: .leading)
                     .background(
                         RoundedRectangle(cornerRadius: 12)
-                            .fill(Color.primary.opacity(0.03)) // Background box sangat tipis
+                        // Background box ngikutin warna kondisi tapi transparant banget
+                            .fill(viewModel.recommendationColor.opacity(0.08))
                             .overlay(
                                 RoundedRectangle(cornerRadius: 12)
-                                    .stroke(Color.primary.opacity(0.05), lineWidth: 1)
+                                    .stroke(viewModel.recommendationColor.opacity(0.2), lineWidth: 1)
                             )
                     )
                     
@@ -130,20 +158,6 @@ struct HomeView: View {
     
     private func parseLatencyString(_ text: String) -> String {
         return text.replacingOccurrences(of: " ms", with: "")
-    }
-    
-    private func getIconForStatus(category: String) -> String {
-        switch category.lowercased() {
-        case "elite": return "bolt.fill"
-        case "good": return "wifi"
-        case "good enough": return "wifi"
-        case "enough": return "exclamationmark.shield"
-        case "slow": return "tortoise.fill"
-        case "unplayable": return "xmark.octagon.fill"
-        case "no connection": return "wifi.slash"
-        case "calculating": return "hourglass"
-        default: return "waveform"
-        }
     }
 }
 

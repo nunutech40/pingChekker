@@ -5,64 +5,63 @@
 //  Created by Nunu Nugraha on 20/03/25.
 //
 
-
 import Foundation
 
 struct PingMessages {
     
-    // Key menggunakan huruf kecil (lowercase) agar seragam
+    // --- BAGIAN 1: LATENCY MESSAGES (EMOSIONAL / FEELING) ---
+    // Fokus: Reaksi terhadap kecepatan sesaat. Nada: Kasual & Fun.
     static let messages: [String: [String]] = [
         "elite" : [
-            "💼 Kerja remote? Meeting lancar tanpa delay. Bisa multitasking tanpa drama!",
-            "🎮 Reflex secepat pro player! No lag, no excuses. Aim auto headshot! 🔫",
-            "📺 Streaming 4K? No buffering, no gangguan. Maraton drama Korea tanpa skip!",
-            "🗣️ Video call sehalus ngobrol langsung. Kamu bisa roasting temen real-time tanpa jeda! 🔥",
-            "🎵 Spotify? Download playlist 100 lagu dalam hitungan detik. Go crazy!"
+            "⚡️ Gila! Ini sih bukan internet, ini kilat!",
+            "🚄 Wusss! Download file berasa mindahin folder lokal.",
+            "🔥 Ping segini sih curang, musuh belum gerak udah mati duluan.",
+            "💎 Definisi internet sultan. Nikmatin selagi bisa!",
+            "🚀 Siap terbang ke bulan? Koneksi tanpa rem!"
         ],
         "good" : [
-            "💼 Zoom meeting aman, nggak bakal freeze di posisi paling jelek.",
-            "🎮 Masih bisa main Valorant atau PUBG tanpa teleport tiba-tiba. Stabil kayak hubungan impian.",
-            "📺 Netflix 1080p? Santai, nggak bakal buffering, asal WiFi nggak rebutan.",
-            "🗣️ Call Discord atau WhatsApp lancar, nggak perlu ngomong ‘Halo? Masih denger gak?’",
-            "🎵 Mau buka IG Story atau TikTok? Geser kanan-kiri tanpa delay!"
+            "✨ Mulus banget, kayak jalan tol baru diaspal.",
+            "🌊 Lancar jaya, streaming 1080p tanpa mikir.",
+            "👌 Asik nih buat kerja sambil dengerin Spotify.",
+            "🎮 Gas main game, aman sentosa damai sejahtera.",
+            "✅ Nggak ada komplain, internet sebagaimana mestinya."
         ],
         "good enough" : [
-            "💼 Bisa kerja remote, tapi kadang ada delay dikit pas screenshare.",
-            "🎮 Masih playable, tapi jangan heran kalau tiba-tiba nembak musuh tapi damage masuknya telat.",
-            "📺 Streaming masih lancar, tapi kadang suka buffer pas adegan klimaks.",
-            "🗣️ Panggilan suara masih oke, tapi kalau video call suka ada freeze random.",
-            "🎵 TikTok dan Instagram lancar, tapi kalau lagi lemot, harus refresh biar update."
+            "😐 Lumayan lah, daripada pake kuota hp.",
+            "☕️ Bisa buat kerja santai, asal jangan download file gede barengan.",
+            "🆗 Masih oke buat YouTube, tapi jangan maksa 4K ya.",
+            "🤸‍♀️ Not bad, not great. Yang penting connect.",
+            "🤏 Sedikit delay tapi masih bisa dimaafkan."
         ],
         "enough" : [
-            "💼 Bisa browsing dan kerja, tapi loading file agak nyendat. Upload? Harus sabar.",
-            "🎮 Game MOBA masih bisa, tapi FPS? Siap-siap teleport ke dimensi lain.",
-            "📺 YouTube bisa jalan, asal jangan berharap kualitas lebih dari 720p.",
-            "🗣️ Video call delay setengah detik. Jangan ngobrol cepat, bisa kayak talking over.",
-            "🎵 Streaming musik oke, tapi kalau offline mode, lebih baik download dulu."
+            "🐢 Sabar... orang sabar disayang Tuhan.",
+            "🐌 Agak berat tarikannya, kayak motor telat ganti oli.",
+            "📦 Loading-nya kerasa, mending ambil kopi dulu.",
+            "🤔 Hmm, lagi rame ya yang pake WiFi?",
+            "📉 Turunin resolusi video biar nggak muter-muter."
         ],
         "slow" : [
-            "💼 Kirim email masih bisa, tapi kalau upload file? Ambil kopi dulu.",
-            "🎮 Main game? Cuma kalau niat olahraga jantung karena delay parah.",
-            "📺 Netflix masih bisa, tapi mungkin butuh buffering kayak era YouTube 2008.",
-            "🗣️ Chat telat masuk, jadi siap-siap dikira slow respon padahal nggak.",
-            "🎵 Spotify bisa muter lagu, tapi kadang suka stuck di loading screen."
+            "🛑 Duh, berat banget. Buka Google aja mikir.",
+            "😫 Mending baca buku daripada nungguin loading.",
+            "🕸️ Ini internet apa jaring laba-laba? Nyangkut mulu.",
+            "🕰️ Berasa balik ke jaman warnet 2008.",
+            "💤 Zzz... keburu tua nungguin ini."
         ],
         "unplayable" : [
-            "💼 Internetnya lebih lambat dari niat buat kerja. Browsing aja nyiksa.",
-            "🎮 Main game online? Jangan. Ini cuma bisa buat game offline.",
-            "📺 YouTube? 144p pun masih buffering. Balik ke DVD aja kali ya.",
-            "🗣️ Chat masuknya delay, kayak orang yang bales WhatsApp seminggu sekali.",
-            "🎵 Musik streaming? Nggak, ini malah kasih vibes radio rusak."
+            "💀 RIP Internet. Mending tidur.",
+            "⛔️ Jangan dipaksa, nanti darah tinggi.",
+            "🧱 Ini tembok, bukan internet. Nggak nembus.",
+            "🆘 Tolong, butuh bantuan sinyal darurat!",
+            "📵 Putus nyambung kayak hubungan toxic."
         ],
         "no connection" : [
-            "❌ Tidak ada koneksi internet. Cek kabel atau modemmu!",
-            "📡 Sinyal hilang entah kemana. Coba restart modem.",
-            "😵 No Connection! Dunia terasa hampa tanpamu (internet)."
+            "👻 Hampa... tidak ada tanda-tanda kehidupan sinyal.",
+            "🔌 Kabelnya colok dulu bos!",
+            "❌ Disconnect. Coba restart modem, siapa tau hoki."
         ],
-        // Tambahan untuk state awal/error
         "calculating": [
-            "🔎 Sedang menerawang kekuatan sinyalmu...",
-            "⏳ Mengumpulkan data, mohon bersabar...",
+            "🔎 Sedang menerawang nasib sinyalmu...",
+            "⏳ Sabar, lagi ngitung...",
             "📡 Ping... Pong... Menunggu balasan..."
         ],
         "unknown": [
@@ -71,13 +70,26 @@ struct PingMessages {
         ]
     ]
     
-    // Fungsi untuk mengambil pesan random berdasarkan kategori
+    // --- BAGIAN 2: QUALITY RECOMMENDATIONS (LOGIS / ADVISORY) ---
+    // Fokus: Saran teknis berdasarkan kestabilan (Jitter & Loss). Nada: Informatif & Tegas.
+    static let recommendations: [String: String] = [
+        "perfect": "✅ SANGAT DIREKOMENDASIKAN untuk Game Kompetitif (Valorant/PUBG), Day Trading, & Upload File Besar.",
+        "stable": "✅ AMAN untuk Zoom Meeting, Netflix HD, & YouTube. Cukup stabil untuk penggunaan harian.",
+        "unstable": "⚠️ RISIKO LAG SPIKE. Streaming video aman (buffering), tapi Game Online & Video Call akan terasa patah-patah.",
+        "laggy": "⚠️ TIDAK DISARANKAN untuk aktivitas realtime. Terasa delay saat mengetik atau klik. Fokus browsing teks saja.",
+        "critical": "⛔️ KONEKSI BURUK. Latensi terlalu tinggi. Hindari konten video, gunakan hanya untuk pesan teks.",
+        "packet_loss": "⛔️ JARINGAN RUSAK (Packet Loss). Data hilang di jalan. Hindari transaksi penting atau upload data.",
+        "offline": "❌ TIDAK TERHUBUNG. Periksa sambungan WiFi atau kabel LAN Anda."
+    ]
+    
+    // Fungsi ambil pesan Latency (Random)
     static func getRandomMessage(for category: String) -> String {
-
-        // Ambil array pesan, kalau key tidak ditemukan, pakai default fallback
         let availableMessages = messages[category] ?? messages["unknown"]!
-        
-        // Ambil satu secara acak
         return availableMessages.randomElement() ?? "Status koneksi..."
+    }
+    
+    // Fungsi ambil rekomendasi Quality (Static/Fixed)
+    static func getRecommendation(for conditionKey: String) -> String {
+        return recommendations[conditionKey] ?? "Menganalisa jaringan..."
     }
 }
