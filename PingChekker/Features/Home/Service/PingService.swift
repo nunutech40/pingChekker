@@ -3,58 +3,45 @@
 //  PingChekker
 //
 //  Created by Nunu Nugraha on 27/11/25.
+//
 
 import Foundation
 
 // =================================================================================
-// MARK: - DOKUMENTASI PING SERVICE
+// MARK: - DOKUMENTASI PING SERVICE (MOS + JITTER STATS)
 // =================================================================================
 //
-// Service ini berfungsi sebagai "Jantung" pemantauan kualitas jaringan.
-// Berbeda dengan ping biasa yang hanya melihat kecepatan (Latency),
-// service ini menghitung KESTABILAN (Quality of Service) untuk menyimpulkan
-// apakah sebuah tempat (Cafe/Kantor/Rumah) layak untuk aktivitas berat.
+// Service ini menghitung Latency, MOS, dan Statistik Jitter secara lengkap.
 //
-// --- KENAPA BUTUH JITTER? ---
-// Latency rendah (misal 20ms) TIDAK MENJAMIN internet enak dipakai.
-// Jika ping loncat-loncat (20ms -> 150ms -> 20ms), itu namanya "High Jitter".
-// Efeknya:
-// - Game: Teleport/Lag Spike (Musuh tiba-tiba pindah).
-// - Zoom: Suara robot atau video putus-putus.
-// - Streaming: Buffering mendadak.
-//
-// --- METRIK YANG DIHITUNG ---
-// 1. Latency (Real-time): Kecepatan respons saat ini (per 10 detik).
-// 2. Packet Loss: Persentase data yang hilang di jalan.
-// 3. Jitter (Real-time): Variasi latency antar paket saat ini.
-// 4. Session Jitter (Long-term): Rata-rata variasi selama aplikasi dibuka.
-// 5. Max Jitter (Worst Case): Lonjakan terparah yang pernah terekam sesi ini.
-//
-// --- RUMUS PERHITUNGAN ---
-// 1. Latency  = (Waktu Terima - Waktu Kirim)
-// 2. Jitter   = |Latency_Sekarang - Latency_Sebelumnya| (Nilai Absolute)
-// 3. Loss %   = ((Total Kirim - Total Terima) / Total Kirim) * 100
-// 4. Session Avg = Total Semua Nilai / Total Jumlah Sampel
+// --- METRIK UTAMA ---
+// 1. Latency: Kecepatan respons (ms).
+// 2. MOS (Mean Opinion Score): Skor kualitas 1-5 (Standar VoIP).
+// 3. Jitter Stats:
+//    - Realtime: Jitter saat ini (10 detik terakhir).
+//    - Session Avg: Rata-rata jitter selama aplikasi nyala (Reputasi).
+//    - Max Jitter: Jitter tertinggi yang pernah tercatat (Deteksi Lag Spike).
 //
 // =================================================================================
 
 struct PingResult {
-    // Data Sesaat (Real-time / 10 detik terakhir) -> Buat Speedometer
+    // Data Speedometer & Realtime
     let latencyMs: Double
     let jitterMs: Double
     let packetLossPercentage: Double
+    let mosScore: Double // Skor MOS Sesaat
     
-    // Data Jangka Panjang (Session / Reputasi Tempat) -> Buat Status "Elite/Lag"
+    // Data Sesi (Reputasi Tempat) - Penting buat ViewModel
     let sessionAvgLatency: Double
     let sessionAvgJitter: Double
-    let sessionMaxJitter: Double // Rekor terburuk (Penting buat deteksi lag spike)
+    let sessionMaxJitter: Double // Rekor terburuk
+    let sessionMOS: Double
 }
 
 class PingService: NSObject, SimplePingDelegate {
     
     static let shared = PingService()
     
-    // Callback ke ViewModel
+    // Callback satu pintu
     var onPingUpdate: ((PingResult) -> Void)?
     var onError: ((String) -> Void)?
     
@@ -62,25 +49,23 @@ class PingService: NSObject, SimplePingDelegate {
     private let hostName: String = "8.8.8.8"
     private var sendDate: Date?
     private var pingTimer: Timer?
+    private var retryTimer: Timer?
     
-    // --- BUFFER REALTIME (Untuk Speedometer) ---
-    // Direset setiap kali lapor (tiap 10 sampel)
+    // --- BUFFER REALTIME ---
     private var pingBuffer: [Double] = []
     private var sentCounter: Int = 0
     private var targetSamples: Int = 5
     
-    // --- SESSION STATS (Untuk Reputasi Tempat) ---
-    // Tidak direset sampai user stop/keluar app
-    private var totalSessionLatency: Double = 0.0
-    private var totalSessionJitter: Double = 0.0
-    private var totalSessionCount: Int = 0
-    private var maxRecordedJitter: Double = 0.0
-    
-    // Helper untuk hitung jitter (perlu tau ping sebelumnya)
-    private var previousLatency: Double? = nil
+    // --- JITTER HELPER ---
     private var currentBatchJitterSum: Double = 0.0
+    private var previousLatency: Double? = nil
     
-    private(set) var currentResult: PingResult?
+    // --- SESSION STATS (AKUMULATIF) ---
+    private var totalSessionLatencySum: Double = 0.0
+    private var totalSessionJitterSum: Double = 0.0
+    private var totalSessionReceivedCount: Int = 0
+    private var totalSessionSentCount: Int = 0
+    private var maxRecordedJitter: Double = 0.0 // Simpan rekor terburuk
     
     override init() {
         super.init()
@@ -88,12 +73,9 @@ class PingService: NSObject, SimplePingDelegate {
     
     func startMonitoring() {
         guard pinger == nil else { return }
-        
-        // Reset State Awal
-        resetRealtimeBuffer()
-        resetSessionStats()
-        
-        startContinuousPing()
+        stopMonitoring()
+        resetBuffers()
+        startPinger()
     }
     
     func stopMonitoring() {
@@ -101,25 +83,26 @@ class PingService: NSObject, SimplePingDelegate {
         pinger = nil
         pingTimer?.invalidate()
         pingTimer = nil
-        resetRealtimeBuffer()
+        retryTimer?.invalidate()
+        resetBuffers()
     }
     
-    private func resetRealtimeBuffer() {
+    private func resetBuffers() {
         pingBuffer.removeAll()
         sentCounter = 0
-        targetSamples = 5 // Awal mulai 5 biar cepet, nanti jadi 10
+        targetSamples = 5
         currentBatchJitterSum = 0.0
-        previousLatency = nil // Reset prev latency tiap batch biar jitter fresh
-    }
-    
-    private func resetSessionStats() {
-        totalSessionLatency = 0.0
-        totalSessionJitter = 0.0
-        totalSessionCount = 0
+        previousLatency = nil
+        
+        // Reset Session
+        totalSessionLatencySum = 0.0
+        totalSessionJitterSum = 0.0
+        totalSessionReceivedCount = 0
+        totalSessionSentCount = 0
         maxRecordedJitter = 0.0
     }
     
-    private func startContinuousPing() {
+    private func startPinger() {
         pinger = SimplePing(hostName: hostName)
         pinger?.delegate = self
         pinger?.start()
@@ -131,64 +114,103 @@ class PingService: NSObject, SimplePingDelegate {
         pinger?.send(with: nil)
         
         sentCounter += 1
+        totalSessionSentCount += 1
         
-        // Trigger Lapor setiap target sampel terpenuhi
         if sentCounter >= targetSamples {
             processAndReport()
         }
     }
     
     private func processAndReport() {
-        // 1. Hitung Realtime Latency (Average Batch Ini)
+        // --- DATA SESAAT (BATCH) ---
         let totalLatency = pingBuffer.reduce(0, +)
         let avgLatency = pingBuffer.isEmpty ? 0.0 : totalLatency / Double(pingBuffer.count)
         
-        // 2. Hitung Realtime Jitter (Average Batch Ini)
-        // Kita sudah hitung sum-nya secara incremental di 'didReceive'
-        // Pembagi dikurangi 1 karena jitter adalah selisih antar 2 titik
         let jitterDivisor = Double(max(1, pingBuffer.count - 1))
         let avgJitter = currentBatchJitterSum / jitterDivisor
         
-        // 3. Hitung Packet Loss
         let sent = Double(sentCounter)
         let received = Double(pingBuffer.count)
         let loss = sent > 0 ? ((sent - received) / sent) * 100.0 : 0.0
-        let safeLoss = max(0.0, loss)
+        let safeLoss = max(0.0, min(100.0, loss))
         
-        // 4. Hitung Session Stats (Akumulasi Jangka Panjang)
-        // -- Latency Session
-        totalSessionLatency += totalLatency
-        totalSessionCount += pingBuffer.count
-        let sessionAvgLatency = totalSessionCount > 0 ? totalSessionLatency / Double(totalSessionCount) : 0.0
+        let instantMOS = calculateMOSScore(latency: avgLatency, jitter: avgJitter, loss: safeLoss)
         
-        // -- Jitter Session (Total Jitter Accumulation / Total Sampel)
-        // Note: Kita approksimasi pembaginya dengan total count
-        totalSessionJitter += currentBatchJitterSum
-        let sessionAvgJitter = totalSessionCount > 0 ? totalSessionJitter / Double(totalSessionCount) : 0.0
         
-        // 5. Bungkus Data
+        // --- DATA SESI (AKUMULASI) ---
+        if received > 0 {
+            totalSessionLatencySum += totalLatency
+            totalSessionReceivedCount += pingBuffer.count
+            totalSessionJitterSum += currentBatchJitterSum
+        }
+        
+        // 1. Avg Session Latency
+        let sessionAvgLat = totalSessionReceivedCount > 0 ? totalSessionLatencySum / Double(totalSessionReceivedCount) : 0.0
+        
+        // 2. Avg Session Jitter
+        let sessionJitterDivisor = Double(max(1, totalSessionReceivedCount - 1))
+        let sessionAvgJit = totalSessionJitterSum / sessionJitterDivisor
+        
+        // 3. Avg Session Loss
+        let sessionSent = Double(totalSessionSentCount)
+        let sessionRecv = Double(totalSessionReceivedCount)
+        let sessionLoss = sessionSent > 0 ? ((sessionSent - sessionRecv) / sessionSent) * 100.0 : 0.0
+        let safeSessionLoss = max(0.0, min(100.0, sessionLoss))
+        
+        // 4. Session MOS
+        let sessionMOS = calculateMOSScore(latency: sessionAvgLat, jitter: sessionAvgJit, loss: safeSessionLoss)
+        
+        
+        // --- BUNGKUS HASIL (LENGKAP) ---
         let result = PingResult(
             latencyMs: avgLatency,
             jitterMs: avgJitter,
             packetLossPercentage: safeLoss,
-            sessionAvgLatency: sessionAvgLatency,
-            sessionAvgJitter: sessionAvgJitter,
-            sessionMaxJitter: maxRecordedJitter
+            mosScore: instantMOS,
+            
+            // Ini yang dibutuhkan ViewModel:
+            sessionAvgLatency: sessionAvgLat,
+            sessionAvgJitter: sessionAvgJit,
+            sessionMaxJitter: maxRecordedJitter,
+            sessionMOS: sessionMOS
         )
         
-        self.currentResult = result
         onPingUpdate?(result)
         
-        // 6. Reset Buffer untuk Siklus Berikutnya
+        print("Live: \(Int(avgLatency))ms | Max Jitter: \(Int(maxRecordedJitter))ms | Sess Jitter: \(Int(sessionAvgJit))ms")
+        
+        // Reset Buffer Batch
         pingBuffer.removeAll()
         sentCounter = 0
-        targetSamples = 10 // Selanjutnya per 10 detik
+        targetSamples = 10
         currentBatchJitterSum = 0.0
-        // Note: previousLatency JANGAN di-nil kan di sini, biar jitter nyambung antar batch
+    }
+    
+    private func calculateMOSScore(latency: Double, jitter: Double, loss: Double) -> Double {
+        if latency == 0 && loss >= 100 { return 1.0 }
+        
+        let effectiveLatency = latency + (jitter * 2) + 10.0
+        var rValue: Double = 0.0
+        
+        if effectiveLatency < 160 {
+            rValue = 93.2 - (effectiveLatency / 40.0)
+        } else {
+            rValue = 93.2 - ((effectiveLatency - 120.0) / 10.0)
+        }
+        
+        rValue = rValue - (loss * 2.5)
+        rValue = max(0.0, min(100.0, rValue))
+        
+        var mos: Double = 1.0
+        if rValue > 0 {
+            mos = 1.0 + (0.035 * rValue) + (rValue * (rValue - 60.0) * (100.0 - rValue) * 0.000007)
+        }
+        return max(1.0, min(5.0, mos))
     }
     
     // MARK: - SimplePingDelegate
     func simplePing(_ pinger: SimplePing, didStartWithAddress address: Data) {
+        retryTimer?.invalidate()
         DispatchQueue.main.async {
             self.pingTimer = Timer.scheduledTimer(withTimeInterval: 1.0, repeats: true) { _ in
                 self.sendPing()
@@ -200,31 +222,29 @@ class PingService: NSObject, SimplePingDelegate {
         guard let sendDate = sendDate else { return }
         let latency = Date().timeIntervalSince(sendDate) * 1000
         
-        // --- LOGIC HITUNG JITTER INCREMENTAL ---
-        // Jitter = Selisih latency sekarang dengan latency sebelumnya
+        // --- HITUNG MAX JITTER ---
         if let prev = previousLatency {
             let diff = abs(latency - prev)
-            
-            // Masukkan ke sum batch saat ini
             currentBatchJitterSum += diff
             
-            // Cek apakah ini rekor jitter terburuk? (Max Jitter)
+            // Update Rekor Max Jitter (Sesi)
             if diff > maxRecordedJitter {
                 maxRecordedJitter = diff
             }
         }
-        
-        // Simpan latency sekarang sebagai "sebelumnya" untuk paket berikutnya
         previousLatency = latency
-        // ---------------------------------------
         
         pingBuffer.append(latency)
     }
     
     func simplePing(_ pinger: SimplePing, didFailWithError error: any Error) {
-        // Error level socket, biasanya akan terhitung sebagai packet loss di logic processAndReport
-        
-        // Teruskan ke ViewModel (PENTING: Biar user tau kalau internet putus total/error socket)
+        print("Ping Error: \(error.localizedDescription)")
         onError?(error.localizedDescription)
+        
+        stopMonitoring()
+        retryTimer?.invalidate()
+        retryTimer = Timer.scheduledTimer(withTimeInterval: 3.0, repeats: false) { [weak self] _ in
+            self?.startMonitoring()
+        }
     }
 }

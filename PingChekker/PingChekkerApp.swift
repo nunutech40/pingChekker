@@ -9,39 +9,83 @@ import SwiftUI
 
 @main
 struct PingCheckerApp: App {
+    
+    @StateObject private var viewModel = HomeViewModel()
+
     var body: some Scene {
+        
+        // --- WINDOW UTAMA ---
         WindowGroup {
-            ContentView()
-                // KUNCI UTAMA 1:
-                // Ubah jadi Landscape (Melebar ke samping)
-                // Width 480, Height 220 sangat pas untuk widget horizontal
+            ContentView(viewModel: viewModel)
                 .frame(width: 480, height: 220)
-                
-                // Mencegah konten melar
                 .fixedSize()
-                
-                // Tambahan: Biar backgroundnya transparan/nyatu sama design kita
                 #if os(macOS)
                 .background(VisualEffect().ignoresSafeArea())
                 #endif
         }
-        // KUNCI UTAMA 2:
-        // Settingan Window macOS Native
         #if os(macOS)
         .windowResizability(.contentSize)
-        .windowStyle(.hiddenTitleBar) // Hilangkan bar atas biar clean
+        .windowStyle(.hiddenTitleBar)
+        .commands {
+            SidebarCommands()
+        }
         #endif
+
+        // --- MENU BAR ICON (UPDATED) ---
+        #if os(macOS)
+        MenuBarExtra {
+            // Header Status
+            Text("Status: \(viewModel.categoryText.uppercased())")
+                .font(.headline)
+            
+            // Info Detail (Jitter diganti MOS Score)
+            Text("Latency: \(viewModel.latencyText)")
+            Text("Quality Score: \(viewModel.mosScore) / 5.0") // <-- LEBIH BERGUNA
+            
+            Divider()
+            
+            Button("Open Dashboard") {
+                NSApp.activate(ignoringOtherApps: true)
+            }
+            
+            Button("Quit") {
+                NSApplication.shared.terminate(nil)
+            }
+            
+        } label: {
+            let iconName = getMenuBarIcon(status: viewModel.categoryText)
+            Image(systemName: iconName)
+        }
+        #endif
+        
+        // Settings Window
+        #if os(macOS)
+        Settings {
+            Text("Settings Coming Soon")
+                .frame(width: 300, height: 100)
+        }
+        #endif
+    }
+    
+    func getMenuBarIcon(status: String) -> String {
+        switch status.lowercased() {
+        case "elite": return "bolt.fill"
+        case "good", "good enough", "stable", "perfect": return "wifi"
+        case "no connection", "offline": return "wifi.slash"
+        case "calculating": return "circle.dotted"
+        case "unstable", "laggy", "critical": return "wifi.exclamationmark"
+        default: return "waveform"
+        }
     }
 }
 
-// Helper buat efek background kaca (Blur) di belakang window
 #if os(macOS)
 struct VisualEffect: NSViewRepresentable {
     func makeNSView(context: Context) -> NSVisualEffectView {
         let view = NSVisualEffectView()
-        view.blendingMode = .behindWindow // Tembus ke wallpaper
+        view.blendingMode = .behindWindow
         view.state = .active
-        view.material = .underWindowBackground // Efek blur standar macOS
+        view.material = .underWindowBackground
         return view
     }
     func updateNSView(_ nsView: NSVisualEffectView, context: Context) {}

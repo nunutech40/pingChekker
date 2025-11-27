@@ -8,18 +8,20 @@
 import SwiftUI
 
 struct ContentView: View {
-    // Tidak perlu @StateObject di sini lagi
-    // Tidak perlu @State showSettings lagi
+    
+    // 1. Terima ViewModel dari Parent (PingCheckerApp)
+    @ObservedObject var viewModel: HomeViewModel
     
     var body: some View {
         // Langsung memanggil HomeView
-        HomeView()
+        HomeView(viewModel: viewModel)
         // Kita pertahankan frame minimum ini untuk support macOS
         // agar windownya tidak terlalu kecil saat dibuka di Mac
-            .frame(width: 300, height: 380)
+        .frame(width: 480, height: 300)
     }
 }
 
 #Preview {
-    ContentView()
+    // Inject Mock ViewModel untuk Preview
+    ContentView(viewModel: HomeViewModel())
 }

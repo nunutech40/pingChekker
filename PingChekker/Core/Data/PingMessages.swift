@@ -9,8 +9,8 @@ import Foundation
 
 struct PingMessages {
     
-    // --- BAGIAN 1: LATENCY MESSAGES (EMOSIONAL / FEELING) ---
-    // Fokus: Reaksi terhadap kecepatan sesaat. Nada: Kasual & Fun.
+    // --- BAGIAN 1: LATENCY MESSAGES (KECEPATAN) ---
+    // Fokus: "Seberapa Cepat?" (Durasi kirim-terima)
     static let messages: [String: [String]] = [
         "elite" : [
             "⚡️ Gila! Ini sih bukan internet, ini kilat!",
@@ -70,16 +70,23 @@ struct PingMessages {
         ]
     ]
     
-    // --- BAGIAN 2: QUALITY RECOMMENDATIONS (LOGIS / ADVISORY) ---
-    // Fokus: Saran teknis berdasarkan kestabilan (Jitter & Loss). Nada: Informatif & Tegas.
+    // --- BAGIAN 2: QUALITY RECOMMENDATIONS (KESTABILAN) ---
+    // Fokus: "Seberapa Konsisten?" (Jitter, Loss, Gangguan)
+    // Copywriting ini fokus pada GEJALA ketidakstabilan (Robot, Teleport, Buffer)
     static let recommendations: [String: String] = [
-        "perfect": "✅ SANGAT DIREKOMENDASIKAN untuk Game Kompetitif (Valorant/PUBG), Day Trading, & Upload File Besar.",
-        "stable": "✅ AMAN untuk Zoom Meeting, Netflix HD, & YouTube. Cukup stabil untuk penggunaan harian.",
-        "unstable": "⚠️ RISIKO LAG SPIKE. Streaming video aman (buffering), tapi Game Online & Video Call akan terasa patah-patah.",
-        "laggy": "⚠️ TIDAK DISARANKAN untuk aktivitas realtime. Terasa delay saat mengetik atau klik. Fokus browsing teks saja.",
-        "critical": "⛔️ KONEKSI BURUK. Latensi terlalu tinggi. Hindari konten video, gunakan hanya untuk pesan teks.",
-        "packet_loss": "⛔️ JARINGAN RUSAK (Packet Loss). Data hilang di jalan. Hindari transaksi penting atau upload data.",
-        "offline": "❌ TIDAK TERHUBUNG. Periksa sambungan WiFi atau kabel LAN Anda."
+        "perfect": "💎 KONEKSI ROCK-SOLID. Sinyal stabil tanpa 'detak jantung' tambahan. Wajib hukumnya untuk Turnamen E-Sport atau Trading Frekuensi Tinggi.",
+        
+        "stable": "✅ SANGAT KONSISTEN. Variasi sinyal minim. Sangat aman untuk Meeting Penting (Zoom) agar suara jernih, atau Streaming film tanpa buffering.",
+        
+        "unstable": "⚠️ SINYAL 'GOYANG' (Jitter Tinggi). Kecepatan mungkin oke, tapi tidak konsisten. Efek: Game Online akan terasa 'teleport' (rubber-banding) dan suara Call jadi robot.",
+        
+        "laggy": "🐢 RESPON LAMBAT. Ada jeda signifikan antara klik dan respon server. Hindari aktivitas real-time (Game/Call). Cocok hanya untuk browsing teks atau download ditinggal tidur.",
+        
+        "critical": "⛔ GANGGUAN BERAT. Sinyal sangat fluktuatif. Video call pasti freeze, game pasti disconnect. Coba restart modem atau pindah posisi duduk.",
+        
+        "packet_loss": "💔 KEBOCORAN DATA (Packet Loss). Sebagian data hilang di tengah jalan. Ini musuh utama Gamer & Streamer. Game akan patah-patah kasar, file upload bisa corrupt.",
+        
+        "offline": "🔌 TERPUTUS TOTAL. Tidak ada sambungan internet sama sekali. Cek kabel LAN atau pastikan WiFi sudah terhubung dengan benar."
     ]
     
     // Fungsi ambil pesan Latency (Random)

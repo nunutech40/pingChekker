@@ -9,174 +9,182 @@ import SwiftUI
 
 struct HomeView: View {
     
-    @StateObject private var viewModel = HomeViewModel()
+    @ObservedObject var viewModel: HomeViewModel
 
     var body: some View {
         ZStack {
-            backgroundGlow
+            // Background Ambient
+            viewModel.statusColor
+                .opacity(0.05)
+                .ignoresSafeArea()
             
             HStack(spacing: 0) {
-                leftSpeedometerColumn
-                dividerView
-                rightDetailsColumn
+                // KIRI: KUALITAS JARINGAN (Quality/MOS)
+                leftQualityColumn
+                
+                // DIVIDER
+                Rectangle()
+                    .fill(Color.primary.opacity(0.1))
+                    .frame(width: 1)
+                    .padding(.vertical, 20)
+                
+                // KANAN: LATENCY (Speedometer & Pesan)
+                rightLatencyColumn
             }
         }
-        // Settingan Window Fix (Ukuran Widget Horizontal)
         .frame(width: 480, height: 220)
         #if os(macOS)
-        .background(.regularMaterial) // Efek kaca native macOS
+        .background(.regularMaterial)
         #endif
     }
 }
 
-// MARK: - View Components (Abstraction)
-// Memisahkan setiap bagian UI agar 'body' tetap bersih dan mudah dibaca
+// MARK: - View Components
 private extension HomeView {
     
-    // 1. Background Ambient
-    var backgroundGlow: some View {
-        viewModel.statusColor
-            .opacity(0.1)
-            .ignoresSafeArea()
-            .animation(.easeInOut(duration: 0.5), value: viewModel.statusColor)
-    }
-    
-    // 2. Kolom Kiri (Visual Speedometer)
-    var leftSpeedometerColumn: some View {
-        ZStack {
-            SpeedometerView(
-                pingValue: parseLatency(viewModel.latencyText),
-                statusColor: viewModel.statusColor
-            )
-            .frame(width: 130, height: 80)
-            .opacity(0.9)
-            
-            // Angka Besar di Tengah Gauge
-            VStack(spacing: -2) {
-                Text(parseLatencyString(viewModel.latencyText))
-                    .font(.system(size: 42, weight: .heavy, design: .rounded))
-                    .foregroundColor(.primary)
-                    .monospacedDigit()
-                    .contentTransition(.numericText())
-                    .shadow(color: .black.opacity(0.1), radius: 1, x: 0, y: 1)
-                
-                Text("ms")
-                    .font(.system(size: 12, weight: .semibold))
-                    .foregroundColor(.secondary)
-            }
-            .offset(y: 15)
-        }
-        .frame(width: 160)
-        .padding(.leading, 10)
-    }
-    
-    // 3. Garis Pemisah
-    var dividerView: some View {
-        Rectangle()
-            .fill(Color.primary.opacity(0.05))
-            .frame(width: 1)
-            .padding(.vertical, 30)
-    }
-    
-    // 4. Kolom Kanan (Detail Informasi)
-    var rightDetailsColumn: some View {
-        VStack(alignment: .leading, spacing: 0) {
-            headerSection
-            
-            Spacer()
-            
-            statusSection
-            
-            networkHealthCard
-            
-            Spacer()
-        }
-        .padding(.vertical, 20)
-        .padding(.horizontal, 20)
-    }
-    
-    // 4a. Header Kecil (Judul & Titik Indikator)
-    var headerSection: some View {
-        HStack(spacing: 6) {
-            Circle()
-                .fill(viewModel.statusColor)
-                .frame(width: 6, height: 6)
-                .shadow(color: viewModel.statusColor.opacity(0.6), radius: 3)
-            
-            Text("PING MONITOR")
-                .font(.system(size: 9, weight: .bold))
+    // --- KOLOM KIRI (TETAP SAMA) ---
+    var leftQualityColumn: some View {
+        VStack(spacing: 2) {
+            Text("QUALITY")
+                .font(.system(size: 10, weight: .bold))
                 .tracking(1.5)
                 .foregroundColor(.secondary)
+                .padding(.bottom, 10)
+            
+            Image(systemName: viewModel.qualityIcon)
+                .font(.system(size: 24))
+                .foregroundColor(viewModel.qualityColor)
+                .padding(.bottom, 4)
+                .symbolEffect(.bounce, value: viewModel.qualityCondition)
+            
+            Text(viewModel.mosScore)
+                .font(.system(size: 38, weight: .black, design: .rounded))
+                .foregroundColor(viewModel.qualityColor)
+                .contentTransition(.numericText())
+            
+            Text(viewModel.qualityCondition)
+                .font(.system(size: 12, weight: .bold))
+                .foregroundColor(viewModel.qualityColor)
+                .multilineTextAlignment(.center)
+                .padding(.horizontal, 4)
+            
+            Spacer()
+                .frame(height: 10)
+            
+            Text(viewModel.sessionAvgText)
+                .font(.system(size: 8, weight: .medium))
+                .foregroundColor(.secondary.opacity(0.6))
+        }
+        .frame(width: 140)
+        .padding(.vertical, 20)
+    }
+    
+    // --- KOLOM KANAN (UPDATED LAYOUT) ---
+    var rightLatencyColumn: some View {
+        VStack(spacing: 0) {
+            
+            // 1. Header
+            HStack {
+                Circle()
+                    .fill(viewModel.statusColor)
+                    .frame(width: 6, height: 6)
+                    .shadow(color: viewModel.statusColor.opacity(0.6), radius: 3)
+                
+                Text("REALTIME LATENCY")
+                    .font(.system(size: 10, weight: .bold))
+                    .tracking(1.5)
+                    .foregroundColor(.secondary)
+                
+                Spacer()
+                
+                if viewModel.isOffline {
+                    Text("OFFLINE")
+                        .font(.system(size: 9, weight: .bold))
+                        .foregroundColor(.white)
+                        .padding(.horizontal, 6)
+                        .padding(.vertical, 2)
+                        .background(Capsule().fill(Color.red))
+                }
+            }
+            .padding(.horizontal, 20)
+            .padding(.top, 15)
             
             Spacer()
             
-            Text(viewModel.sessionAvgText)
-                .font(.system(size: 9, weight: .medium))
-                .foregroundColor(.secondary.opacity(0.7))
-        }
-        .padding(.top, 4)
-        .padding(.bottom, 15)
-    }
-    
-    // 4b. Status Utama (ELITE/LAG & Fun Message)
-    var statusSection: some View {
-        Group {
-            Text(viewModel.categoryText.uppercased())
-                .font(.system(size: 26, weight: .black, design: .default))
-                .foregroundColor(viewModel.statusColor)
-                .shadow(color: viewModel.statusColor.opacity(0.2), radius: 4, x: 0, y: 2)
-                .lineLimit(1)
-                .minimumScaleFactor(0.8)
-                .animation(.spring(), value: viewModel.categoryText)
-            
-            Text(viewModel.statusMessage)
-                .font(.system(size: 10, weight: .medium))
-                .foregroundColor(.secondary)
-                .lineLimit(1)
-                .padding(.bottom, 12)
-                .animation(.easeInOut, value: viewModel.statusMessage)
-        }
-    }
-    
-    // 4c. Kartu Kesehatan Jaringan (Rekomendasi Teknis)
-    var networkHealthCard: some View {
-        VStack(alignment: .leading, spacing: 6) {
-            // Judul Kondisi
-            HStack(spacing: 6) {
-                Image(systemName: viewModel.recommendationIcon)
-                    .font(.system(size: 12, weight: .bold))
-                
-                Text(viewModel.connectionCondition)
-                    .font(.system(size: 11, weight: .bold))
-            }
-            .foregroundColor(viewModel.recommendationColor)
-            
-            // Isi Saran
-            Text(viewModel.connectionRecommendation)
-                .font(.system(size: 10, weight: .regular))
-                .foregroundColor(.primary.opacity(0.8))
-                .lineLimit(3)
-                .fixedSize(horizontal: false, vertical: true)
-                .lineSpacing(2)
-        }
-        .padding(10)
-        .frame(maxWidth: .infinity, alignment: .leading)
-        .background(
-            RoundedRectangle(cornerRadius: 12)
-                .fill(viewModel.recommendationColor.opacity(0.08))
-                .overlay(
-                    RoundedRectangle(cornerRadius: 12)
-                        .stroke(viewModel.recommendationColor.opacity(0.2), lineWidth: 1)
+            // 2. SPEEDOMETER CENTERED (PERBAIKAN UTAMA DISINI)
+            // Menggunakan ZStack agar angka berada DI DALAM lengkungan, bukan di samping
+            ZStack {
+                // Visual Gauge (Lengkungan)
+                SpeedometerView(
+                    pingValue: parseLatency(viewModel.latencyText),
+                    statusColor: viewModel.statusColor
                 )
-        )
+                .frame(width: 140, height: 85) // Ukuran pas
+                .opacity(0.9)
+                
+                // Angka & Unit (Overlay di tengah bawah)
+                VStack(spacing: 0) {
+                    // Angka Besar
+                    Text(parseLatencyString(viewModel.latencyText))
+                        .font(.system(size: 42, weight: .heavy, design: .rounded))
+                        .foregroundColor(.primary)
+                        .monospacedDigit()
+                        .contentTransition(.numericText())
+                        .shadow(color: .black.opacity(0.1), radius: 1, x: 0, y: 1)
+                    
+                    // Unit & Badge Kecil
+                    HStack(spacing: 4) {
+                        Text("ms")
+                            .font(.system(size: 12, weight: .semibold))
+                            .foregroundColor(.secondary)
+                            .padding(.bottom, 4) // Angkat dikit sejajar badge
+                        
+                        // Badge Status Kecil (GOOD/ELITE)
+                        Text(viewModel.categoryText.uppercased())
+                            .font(.system(size: 9, weight: .bold))
+                            .foregroundColor(.white)
+                            .padding(.horizontal, 6)
+                            .padding(.vertical, 2)
+                            .background(Capsule().fill(viewModel.statusColor))
+                    }
+                }
+                .offset(y: 20) // Geser ke posisi "mulut" speedometer
+            }
+            .padding(.bottom, 10)
+            
+            Spacer()
+            
+            // 3. Fun Message Bubble
+            HStack(alignment: .top, spacing: 10) {
+                Image(systemName: "quote.bubble.fill")
+                    .font(.system(size: 14))
+                    .foregroundColor(viewModel.statusColor)
+                    .padding(.top, 2)
+                
+                Text(viewModel.statusMessage)
+                    .font(.system(size: 11, weight: .medium))
+                    .foregroundColor(.primary.opacity(0.9))
+                    .lineLimit(2)
+                    .fixedSize(horizontal: false, vertical: true)
+                    .frame(maxWidth: .infinity, alignment: .leading)
+            }
+            .padding(12)
+            .background(
+                RoundedRectangle(cornerRadius: 12)
+                    .fill(Color.primary.opacity(0.04))
+                    .overlay(
+                        RoundedRectangle(cornerRadius: 12)
+                            .stroke(Color.primary.opacity(0.05), lineWidth: 1)
+                    )
+            )
+            .padding(.horizontal, 20)
+            .padding(.bottom, 20)
+        }
     }
-}
-
-// MARK: - Logic Helpers
-private extension HomeView {
+    
+    // MARK: - Helpers
     func parseLatency(_ text: String) -> Double {
-        let cleanText = text.replacingOccurrences(of: " ms", with: "")
-        return Double(cleanText) ?? 0.0
+        return Double(text.replacingOccurrences(of: " ms", with: "")) ?? 0.0
     }
     
     func parseLatencyString(_ text: String) -> String {
@@ -185,6 +193,6 @@ private extension HomeView {
 }
 
 #Preview {
-    HomeView()
+    HomeView(viewModel: HomeViewModel())
         .frame(width: 480, height: 220)
 }
