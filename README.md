@@ -1,94 +1,75 @@
-
-
 PingChekker 📡
 
-PingChekker is a native macOS utility tool designed to monitor internet connection quality in real-time. Unlike standard terminal ping commands, PingChekker translates raw latency data into human-readable statuses (e.g., "Elite", "Good", "Lag") and visualizes stability using a compact, widget-style interface.
-
+PingChekker adalah utilitas native macOS yang digunakan untuk memonitor kualitas koneksi internet secara realtime. Berbeda dengan perintah ping biasa di terminal, PingChekker menerjemahkan data latensi mentah menjadi status yang mudah dipahami (misalnya: "Elite", "Bagus", "Lag") dan menampilkan stabilitas jaringan melalui antarmuka bergaya widget yang ringkas.
 
 <p align="center">
-<!-- Ganti link ini dengan screenshot aplikasimu yang "Screenshot 2025-11-27..." tadi -->
 <img src="https://github.com/user-attachments/assets/350d5552-a218-416d-9d36-733f928f549f" alt="PingChekker Screenshot" width="600"/>
 </p>
 
-🚀 Key Features
+🚀 Fitur Utama
 
-Real-time Monitoring: Visualizes latency (ms) with a dynamic speedometer.
+- Monitoring Realtime: Menampilkan latensi (ms) menggunakan speedometer dinamis.
+- Analisis Stabilitas: Menghitung Jitter dan Packet Loss untuk mengetahui kualitas jaringan yang sebenarnya.
+- Rata-Rata Sesi: Memberikan skor kualitas berdasarkan keseluruhan durasi sesi pemantauan.
+- Feedback Manusiawi: Pesan kontekstual seperti "Sangat cocok untuk gaming", "Bagus untuk streaming".
+- Desain Native: Dibangun dengan SwiftUI dan efek kaca (NSVisualEffectView) yang menyatu dengan tampilan macOS.
+- Menu Bar Support: (Segera hadir)
 
-Stability Analysis: Calculates Jitter and Packet Loss to determine true network quality, not just speed.
+🛠 Cara Kerja
 
-Session Average: Provides a long-term quality score based on your entire session duration.
+PingChekker tidak sekadar melakukan ping. Aplikasi ini menggunakan logika buffering khusus agar data tetap akurat dan tampilan UI tetap stabil.
 
-Humanized Feedback: Contextual messages (e.g., "Perfect for gaming", "Good for streaming") based on ping categories.
+1. Mekanisme Inti (Proses Mikro)
 
-Native Design: Built with SwiftUI, featuring a translucent glass effect (NSVisualEffectView) that blends perfectly with the macOS desktop.
+Aplikasi menggunakan SimplePing dari Apple untuk menangani ICMP packet level rendah. Host (default: 8.8.8.8) akan di-resolve, paket dikirim, dan waktu respons diukur.
 
-Menu Bar Support: (Coming Soon) Quick access from the status bar.
+2. Mekanisme Bisnis (Proses Makro)
 
-🛠 How It Works
+Untuk mencegah tampilan UI bergetar dan agar datanya lebih bermakna, PingChekker menggunakan sistem Sampling & Buffering:
 
-PingChekker goes beyond a simple ping command. It uses a custom buffering logic to ensure data accuracy and UI stability.
+- Sampling: Tidak setiap packet langsung ditampilkan, tetapi dikumpulkan di buffer (misalnya 10 sampel).
+- Perhitungan: Setelah buffer penuh, aplikasi menghitung:
+  - Rata-Rata Latensi
+  - Jitter (perbedaan antar ping)
+  - Packet Loss (persentase kegagalan ping)
+- Reporting: Hasil yang sudah diolah dikirim ke ViewModel untuk memperbarui warna UI, teks, dan gauge.
 
-1. The Core Mechanism (Micro Process)
+🏗 Arsitektur
 
-At its core, the app utilizes Apple's SimplePing sample code to handle low-level ICMP packets. It resolves the host (default: 8.8.8.8), sends a packet, and measures the time taken for the response.
-
-2. The Business Logic (Macro Process)
-
-To prevent UI jitter and provide meaningful data, PingChekker implements a Sampling & Buffering Service:
-
-Sampling: Instead of updating the UI on every single packet, the app collects data into a buffer (e.g., 10 samples).
-
-Calculation: Once the buffer is full, it calculates:
-
-Average Latency: To smooth out outliers.
-
-Jitter: The variance between ping times (crucial for gaming stability).
-
-Packet Loss: The percentage of failed packets.
-
-Reporting: The processed data is then sent to the ViewModel to update the UI color, text, and gauge.
-
-🏗 Architecture
-
-The project follows a clean MVVM (Model-View-ViewModel) pattern with a separation of concerns between Core components and Features.
+Proyek ini mengikuti pola MVVM (Model-View-ViewModel) dengan pembagian jelas antara Core dan Features.
 
 PingChecker/
 ├── Core/
-│   ├── UIComponents/    # Reusable Views (Speedometer, etc.)
-│   └── Utils/           # Helpers & SimplePing Library
+│   ├── UIComponents/    # Komponen UI yang bisa digunakan ulang
+│   └── Utils/           # Helper & Library SimplePing
 │
 ├── Features/
 │   └── InternetMonitor/
-│       ├── Services/    # PingService (Business Logic & Buffering)
-│       ├── ViewModels/  # HomeViewModel (Data Transformation)
-│       └── Views/       # HomeView (UI Layout)
+│       ├── Services/    # PingService (Logika bisnis + buffering)
+│       ├── ViewModels/  # HomeViewModel (Transformasi data)
+│       └── Views/       # HomeView (Tampilan UI)
 │
-└── App/                 # App Entry Point & Window Configuration
+└── App/                 # Entry Point aplikasi & konfigurasi window
 
+💻 Teknologi
 
-💻 Tech Stack
+- Bahasa: Swift
+- UI Framework: SwiftUI
+- Networking: Foundation, CFNetwork (melalui SimplePing)
+- Platform: macOS 12.0+
 
-Language: Swift
+📦 Instalasi
 
-UI Framework: SwiftUI
+Clone repository:
 
-Networking: Foundation, CFNetwork (via SimplePing)
+git clone https://github.com/yourusername/PingChekker.git
 
-Platform: macOS 12.0+
+Buka PingChekker.xcodeproj dengan Xcode.
 
-📦 Installation
+Pastikan App Sandbox aktif di "Signing & Capabilities" serta opsi "Outgoing Connections (Client)" dicentang.
 
-Clone the repository:
+Build & Run (Cmd + R).
 
-git clone [https://github.com/yourusername/PingChekker.git](https://github.com/yourusername/PingChekker.git)
+📝 Lisensi
 
-
-Open PingChekker.xcodeproj in Xcode.
-
-Ensure App Sandbox is enabled in "Signing & Capabilities" with "Outgoing Connections (Client)" checked.
-
-Build and Run (Cmd + R).
-
-📝 License
-
-This project is licensed under the MIT License.
+Proyek ini dirilis di bawah MIT License.
