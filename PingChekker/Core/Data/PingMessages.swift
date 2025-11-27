@@ -5,9 +5,12 @@
 //  Created by Nunu Nugraha on 20/03/25.
 //
 
+
 import Foundation
 
 struct PingMessages {
+    
+    // Key menggunakan huruf kecil (lowercase) agar seragam
     static let messages: [String: [String]] = [
         "elite" : [
             "💼 Kerja remote? Meeting lancar tanpa delay. Bisa multitasking tanpa drama!",
@@ -52,12 +55,29 @@ struct PingMessages {
             "🎵 Musik streaming? Nggak, ini malah kasih vibes radio rusak."
         ],
         "no connection" : [
-            "No Connection!"
+            "❌ Tidak ada koneksi internet. Cek kabel atau modemmu!",
+            "📡 Sinyal hilang entah kemana. Coba restart modem.",
+            "😵 No Connection! Dunia terasa hampa tanpamu (internet)."
+        ],
+        // Tambahan untuk state awal/error
+        "calculating": [
+            "🔎 Sedang menerawang kekuatan sinyalmu...",
+            "⏳ Mengumpulkan data, mohon bersabar...",
+            "📡 Ping... Pong... Menunggu balasan..."
+        ],
+        "unknown": [
+            "😵 Status tidak dikenali.",
+            "❓ Data aneh terdeteksi."
         ]
     ]
     
-    // akses message array berdasarkan categorynya, lalu di ambil secara random
+    // Fungsi untuk mengambil pesan random berdasarkan kategori
     static func getRandomMessage(for category: String) -> String {
-        return messages[category]?.randomElement() ?? "Maaf status koneksimu tidak terdeteksi. Cek kembali dan coba lagi."
+
+        // Ambil array pesan, kalau key tidak ditemukan, pakai default fallback
+        let availableMessages = messages[category] ?? messages["unknown"]!
+        
+        // Ambil satu secara acak
+        return availableMessages.randomElement() ?? "Status koneksi..."
     }
 }
