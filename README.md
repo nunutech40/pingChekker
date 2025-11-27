@@ -1,64 +1,103 @@
-PingChekker 📡
+# PingChekker 📡
 
 PingChekker adalah utilitas native macOS yang digunakan untuk memonitor kualitas koneksi internet secara realtime. Berbeda dengan perintah ping biasa di terminal, PingChekker menerjemahkan data latensi mentah menjadi status yang mudah dipahami (misalnya: "Elite", "Bagus", "Lag") dan menampilkan stabilitas jaringan melalui antarmuka bergaya widget yang ringkas.
 
 <p align="center">
-<img src="https://github.com/user-attachments/assets/350d5552-a218-416d-9d36-733f928f549f" alt="PingChekker Screenshot" width="600"/>
+<img src="https://github.com/user-attachments/assets/350d5552-a218-416d-9d36-733f928f549f" width="600"/>
 </p>
 
-🚀 Fitur Utama
+## 🚀 Fitur Utama
 
 - Monitoring Realtime: Menampilkan latensi (ms) menggunakan speedometer dinamis.
 - Analisis Stabilitas: Menghitung Jitter dan Packet Loss untuk mengetahui kualitas jaringan yang sebenarnya.
 - Rata-Rata Sesi: Memberikan skor kualitas berdasarkan keseluruhan durasi sesi pemantauan.
-- Feedback Manusiawi: Pesan kontekstual seperti "Sangat cocok untuk gaming", "Bagus untuk streaming".
-- Desain Native: Dibangun dengan SwiftUI dan efek kaca (NSVisualEffectView) yang menyatu dengan tampilan macOS.
+- Feedback Manusiawi: Pesan seperti "Sangat cocok untuk gaming", "Bagus untuk streaming".
+- Desain Native: SwiftUI + NSVisualEffectView.
 - Menu Bar Support: (Segera hadir)
 
-🛠 Cara Kerja
+## 🛠 Cara Kerja
 
-PingChekker tidak sekadar melakukan ping. Aplikasi ini menggunakan logika buffering khusus agar data tetap akurat dan tampilan UI tetap stabil.
+PingChekker bekerja menggunakan mekanisme mikro dan makro untuk menghasilkan data yang stabil dan akurat.
 
-1. Mekanisme Inti (Proses Mikro)
+### Mekanisme Mikro
+Menggunakan SimplePing untuk mengirim ICMP packet ke 8.8.8.8 tiap 1 detik, lalu mengukur latency.
 
-Aplikasi menggunakan SimplePing dari Apple untuk menangani ICMP packet level rendah. Host (default: 8.8.8.8) akan di-resolve, paket dikirim, dan waktu respons diukur.
+### Mekanisme Makro (Buffer 10 detik)
+- Mengumpulkan sampel ping (default 10)
+- Menghitung:
+  - Rata-rata Latency
+  - Jitter (incremental)
+  - Packet Loss
+- Session Average diperbarui tiap 1 menit
 
-2. Mekanisme Bisnis (Proses Makro)
+## 📏 Definisi & Cara Perhitungan
 
-Untuk mencegah tampilan UI bergetar dan agar datanya lebih bermakna, PingChekker menggunakan sistem Sampling & Buffering:
+### Latency (ms)
+Waktu pulang–pergi paket (RTT).
 
-- Sampling: Tidak setiap packet langsung ditampilkan, tetapi dikumpulkan di buffer (misalnya 10 sampel).
-- Perhitungan: Setelah buffer penuh, aplikasi menghitung:
-  - Rata-Rata Latensi
-  - Jitter (perbedaan antar ping)
-  - Packet Loss (persentase kegagalan ping)
-- Reporting: Hasil yang sudah diolah dikirim ke ViewModel untuk memperbarui warna UI, teks, dan gauge.
+Rumus:
+```
+latency = (receivedTime - sendTime) * 1000
+```
+Kode:
+```swift
+let latency = Date().timeIntervalSince(sendDate) * 1000
+```
 
-🏗 Arsitektur
+### Jitter (ms)
+Variasi antar ping.
 
-Proyek ini mengikuti pola MVVM (Model-View-ViewModel) dengan pembagian jelas antara Core dan Features.
+Rumus sederhana:
+```
+jitter = rata-rata(|latency[i] - latency[i-1]|)
+```
+Kode incremental:
+```swift
+if let prev = previousLatency {
+    jitterSum += abs(latency - prev)
+}
+```
 
-<img width="715" height="304" alt="Screenshot 2025-11-27 at 16 08 17" src="https://github.com/user-attachments/assets/af13f4d5-75ee-4db0-87c0-6a634a7cba9d" />
+### Packet Loss (%)
+Persentase paket yang tidak dibalas.
+```
+loss = ((sent - received) / sent) * 100
+```
 
-💻 Teknologi
+### Session Average (ms)
+Rata-rata latency jangka panjang (update tiap 1 menit).
 
-- Bahasa: Swift
-- UI Framework: SwiftUI
-- Networking: Foundation, CFNetwork (melalui SimplePing)
-- Platform: macOS 12.0+
+```
+cachedSessionAvg = totalSessionLatency / totalSessionCount
+```
 
-📦 Instalasi
+## 🧠 Arsitektur
 
-Clone repository:
+Mengikuti MVVM:
+- Core/
+- Features/InternetMonitor/
+- App/
 
+## 💻 Teknologi
+- Swift
+- SwiftUI
+- CFNetwork + SimplePing
+- macOS 12+
+
+## 📦 Instalasi
+```
 git clone https://github.com/yourusername/PingChekker.git
+open PingChekker.xcodeproj
+```
 
-Buka PingChekker.xcodeproj dengan Xcode.
+Aktifkan:
+- App Sandbox
+- Outgoing Connections
 
-Pastikan App Sandbox aktif di "Signing & Capabilities" serta opsi "Outgoing Connections (Client)" dicentang.
+Jalankan:
+```
+Cmd + R
+```
 
-Build & Run (Cmd + R).
-
-📝 Lisensi
-
-Proyek ini dirilis di bawah MIT License.
+## 📝 Lisensi
+MIT License.
