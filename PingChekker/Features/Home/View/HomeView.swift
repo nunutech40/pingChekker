@@ -111,44 +111,42 @@ private extension HomeView {
             
             Spacer()
             
-            // 2. SPEEDOMETER CENTERED (PERBAIKAN UTAMA DISINI)
-            // Menggunakan ZStack agar angka berada DI DALAM lengkungan, bukan di samping
+            // 2. SPEEDOMETER CENTERED (REVISI POSISI MS)
             ZStack {
                 // Visual Gauge (Lengkungan)
                 SpeedometerView(
                     pingValue: parseLatency(viewModel.latencyText),
                     statusColor: viewModel.statusColor
                 )
-                .frame(width: 140, height: 85) // Ukuran pas
+                .frame(width: 140, height: 85)
                 .opacity(0.9)
                 
                 // Angka & Unit (Overlay di tengah bawah)
-                VStack(spacing: 0) {
-                    // Angka Besar
-                    Text(parseLatencyString(viewModel.latencyText))
-                        .font(.system(size: 42, weight: .heavy, design: .rounded))
-                        .foregroundColor(.primary)
-                        .monospacedDigit()
-                        .contentTransition(.numericText())
-                        .shadow(color: .black.opacity(0.1), radius: 1, x: 0, y: 1)
+                VStack(spacing: 4) { // Kasih jarak dikit antara Angka dan Badge
                     
-                    // Unit & Badge Kecil
-                    HStack(spacing: 4) {
-                        Text("ms")
-                            .font(.system(size: 12, weight: .semibold))
-                            .foregroundColor(.secondary)
-                            .padding(.bottom, 4) // Angkat dikit sejajar badge
+                    // BARIS 1: Angka + Unit (Sebelahan)
+                    HStack(alignment: .lastTextBaseline, spacing: 3) {
+                        Text(parseLatencyString(viewModel.latencyText))
+                            .font(.system(size: 42, weight: .heavy, design: .rounded))
+                            .foregroundColor(.primary)
+                            .monospacedDigit()
+                            .contentTransition(.numericText())
+                            .shadow(color: .black.opacity(0.1), radius: 1, x: 0, y: 1)
                         
-                        // Badge Status Kecil (GOOD/ELITE)
-                        Text(viewModel.categoryText.uppercased())
-                            .font(.system(size: 9, weight: .bold))
-                            .foregroundColor(.white)
-                            .padding(.horizontal, 6)
-                            .padding(.vertical, 2)
-                            .background(Capsule().fill(viewModel.statusColor))
+                        Text("ms")
+                            .font(.system(size: 16, weight: .bold, design: .rounded)) // Ukuran proporsional
+                            .foregroundColor(.secondary)
                     }
+                    
+                    // BARIS 2: Badge Status (Di Bawahnya)
+                    Text(viewModel.categoryText.uppercased())
+                        .font(.system(size: 10, weight: .bold))
+                        .foregroundColor(.white)
+                        .padding(.horizontal, 8)
+                        .padding(.vertical, 3)
+                        .background(Capsule().fill(viewModel.statusColor))
                 }
-                .offset(y: 20) // Geser ke posisi "mulut" speedometer
+                .offset(y: 10) // Geser posisi biar pas di tengah lengkungan
             }
             .padding(.bottom, 10)
             
@@ -184,7 +182,8 @@ private extension HomeView {
     
     // MARK: - Helpers
     func parseLatency(_ text: String) -> Double {
-        return Double(text.replacingOccurrences(of: " ms", with: "")) ?? 0.0
+        let cleanText = text.replacingOccurrences(of: " ms", with: "")
+        return Double(cleanText) ?? 0.0
     }
     
     func parseLatencyString(_ text: String) -> String {
