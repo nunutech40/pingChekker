@@ -38,18 +38,7 @@ Untuk mencegah tampilan UI bergetar dan agar datanya lebih bermakna, PingChekker
 
 Proyek ini mengikuti pola MVVM (Model-View-ViewModel) dengan pembagian jelas antara Core dan Features.
 
-PingChecker/
-├── Core/
-│   ├── UIComponents/    # Komponen UI yang bisa digunakan ulang
-│   └── Utils/           # Helper & Library SimplePing
-│
-├── Features/
-│   └── InternetMonitor/
-│       ├── Services/    # PingService (Logika bisnis + buffering)
-│       ├── ViewModels/  # HomeViewModel (Transformasi data)
-│       └── Views/       # HomeView (Tampilan UI)
-│
-└── App/                 # Entry Point aplikasi & konfigurasi window
+<img width="715" height="304" alt="Screenshot 2025-11-27 at 16 08 17" src="https://github.com/user-attachments/assets/af13f4d5-75ee-4db0-87c0-6a634a7cba9d" />
 
 💻 Teknologi
 
