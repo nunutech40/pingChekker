@@ -14,9 +14,9 @@ struct ContentView: View {
     var body: some View {
         // Langsung memanggil HomeView
         HomeView()
-            // Kita pertahankan frame minimum ini untuk support macOS
-            // agar windownya tidak terlalu kecil saat dibuka di Mac
-            .frame(minWidth: 350, minHeight: 400)
+        // Kita pertahankan frame minimum ini untuk support macOS
+        // agar windownya tidak terlalu kecil saat dibuka di Mac
+            .frame(width: 300, height: 380)
     }
 }
 
