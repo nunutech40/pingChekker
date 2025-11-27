@@ -23,7 +23,7 @@ class PingService: NSObject, SimplePingDelegate {
     
     // --- SETTINGAN BARU ---
     // Counter berjalan (0, 1, 2, 3...)
-    private var sampleCounter: Int = 0
+    private var counterPing: Int = 0
     
     // Target sample (Variable Global Class biar bisa diubah logicnya)
     // Start awal 5, nanti berubah jadi 10
@@ -40,7 +40,7 @@ class PingService: NSObject, SimplePingDelegate {
         
         // Reset Logic
         targetSamples = 5
-        sampleCounter = 0
+        counterPing = 0
         pingBuffer.removeAll()
         
         startContinuousPing()
@@ -52,7 +52,7 @@ class PingService: NSObject, SimplePingDelegate {
         pingTimer?.invalidate()
         pingTimer = nil
         pingBuffer.removeAll()
-        sampleCounter = 0
+        counterPing = 0
     }
     
     private func startContinuousPing() {
@@ -67,10 +67,10 @@ class PingService: NSObject, SimplePingDelegate {
         pinger?.send(with: nil)
         
         // 1. NAIKKAN COUNTER (Setiap detik/setiap kirim)
-        sampleCounter += 1
+        counterPing += 1
         
         // 2. CEK APAKAH SUDAH WAKTUNYA LAPOR?
-        if sampleCounter >= targetSamples {
+        if counterPing >= targetSamples {
             processAndReport()
         }
     }
@@ -93,7 +93,7 @@ class PingService: NSObject, SimplePingDelegate {
         
         // 3. RESET & UPDATE TARGET
         pingBuffer.removeAll()
-        sampleCounter = 0
+        counterPing = 0
         
         // Logic ganti target: Set jadi 10 seterusnya
         targetSamples = 10
