@@ -36,17 +36,19 @@ struct PingResult {
     let sessionMaxJitter: Double // Rekor terburuk
     let sessionMOS: Double
 }
-
-class PingService: NSObject, SimplePingDelegate {
+class PingService: NSObject, SimplePingDelegate, PingServiceProtocol {
     
     static let shared = PingService()
     
-    // Callback satu pintu
+    // Conformance to Protocol
     var onPingUpdate: ((PingResult) -> Void)?
     var onError: ((String) -> Void)?
     
     private var pinger: SimplePing!
-    private let hostName: String = "8.8.8.8"
+    
+    // Ambil dari SettingsStore (Var biar bisa diupdate)
+    private var hostName: String = SettingsStore.shared.targetHost
+    
     private var sendDate: Date?
     private var pingTimer: Timer?
     private var retryTimer: Timer?
@@ -60,15 +62,25 @@ class PingService: NSObject, SimplePingDelegate {
     private var currentBatchJitterSum: Double = 0.0
     private var previousLatency: Double? = nil
     
-    // --- SESSION STATS (AKUMULATIF) ---
+    // --- SESSION STATS ---
     private var totalSessionLatencySum: Double = 0.0
     private var totalSessionJitterSum: Double = 0.0
     private var totalSessionReceivedCount: Int = 0
     private var totalSessionSentCount: Int = 0
-    private var maxRecordedJitter: Double = 0.0 // Simpan rekor terburuk
+    private var maxRecordedJitter: Double = 0.0
     
     override init() {
         super.init()
+    }
+    
+    // MARK: - Protocol Methods
+    
+    func updateHost(newHost: String) {
+        guard newHost != hostName else { return }
+        print("🔁 Switching Host: \(hostName) -> \(newHost)")
+        hostName = newHost
+        stopMonitoring()
+        startMonitoring()
     }
     
     func startMonitoring() {
@@ -84,8 +96,11 @@ class PingService: NSObject, SimplePingDelegate {
         pingTimer?.invalidate()
         pingTimer = nil
         retryTimer?.invalidate()
+        retryTimer = nil
         resetBuffers()
     }
+    
+    // MARK: - Private Helpers
     
     private func resetBuffers() {
         pingBuffer.removeAll()
@@ -94,7 +109,7 @@ class PingService: NSObject, SimplePingDelegate {
         currentBatchJitterSum = 0.0
         previousLatency = nil
         
-        // Reset Session
+        // Reset Session (Ganti host = Reset statistik)
         totalSessionLatencySum = 0.0
         totalSessionJitterSum = 0.0
         totalSessionReceivedCount = 0
@@ -103,12 +118,12 @@ class PingService: NSObject, SimplePingDelegate {
     }
     
     private func startPinger() {
+        print("🚀 Starting Pinger to: \(hostName)")
         pinger = SimplePing(hostName: hostName)
         pinger?.delegate = self
         pinger?.start()
     }
     
-    // MARK: - Logic Internal
     @objc private func sendPing() {
         sendDate = Date()
         pinger?.send(with: nil)
@@ -122,7 +137,7 @@ class PingService: NSObject, SimplePingDelegate {
     }
     
     private func processAndReport() {
-        // --- DATA SESAAT (BATCH) ---
+        // --- DATA SESAAT ---
         let totalLatency = pingBuffer.reduce(0, +)
         let avgLatency = pingBuffer.isEmpty ? 0.0 : totalLatency / Double(pingBuffer.count)
         
@@ -136,39 +151,30 @@ class PingService: NSObject, SimplePingDelegate {
         
         let instantMOS = calculateMOSScore(latency: avgLatency, jitter: avgJitter, loss: safeLoss)
         
-        
-        // --- DATA SESI (AKUMULASI) ---
+        // --- DATA SESI ---
         if received > 0 {
             totalSessionLatencySum += totalLatency
             totalSessionReceivedCount += pingBuffer.count
             totalSessionJitterSum += currentBatchJitterSum
         }
         
-        // 1. Avg Session Latency
         let sessionAvgLat = totalSessionReceivedCount > 0 ? totalSessionLatencySum / Double(totalSessionReceivedCount) : 0.0
-        
-        // 2. Avg Session Jitter
         let sessionJitterDivisor = Double(max(1, totalSessionReceivedCount - 1))
         let sessionAvgJit = totalSessionJitterSum / sessionJitterDivisor
         
-        // 3. Avg Session Loss
         let sessionSent = Double(totalSessionSentCount)
         let sessionRecv = Double(totalSessionReceivedCount)
         let sessionLoss = sessionSent > 0 ? ((sessionSent - sessionRecv) / sessionSent) * 100.0 : 0.0
         let safeSessionLoss = max(0.0, min(100.0, sessionLoss))
         
-        // 4. Session MOS
         let sessionMOS = calculateMOSScore(latency: sessionAvgLat, jitter: sessionAvgJit, loss: safeSessionLoss)
         
-        
-        // --- BUNGKUS HASIL (LENGKAP) ---
+        // --- LAPOR ---
         let result = PingResult(
             latencyMs: avgLatency,
             jitterMs: avgJitter,
             packetLossPercentage: safeLoss,
             mosScore: instantMOS,
-            
-            // Ini yang dibutuhkan ViewModel:
             sessionAvgLatency: sessionAvgLat,
             sessionAvgJitter: sessionAvgJit,
             sessionMaxJitter: maxRecordedJitter,
@@ -176,8 +182,6 @@ class PingService: NSObject, SimplePingDelegate {
         )
         
         onPingUpdate?(result)
-        
-        print("Live: \(Int(avgLatency))ms | Max Jitter: \(Int(maxRecordedJitter))ms | Sess Jitter: \(Int(sessionAvgJit))ms")
         
         // Reset Buffer Batch
         pingBuffer.removeAll()
@@ -222,15 +226,10 @@ class PingService: NSObject, SimplePingDelegate {
         guard let sendDate = sendDate else { return }
         let latency = Date().timeIntervalSince(sendDate) * 1000
         
-        // --- HITUNG MAX JITTER ---
         if let prev = previousLatency {
             let diff = abs(latency - prev)
             currentBatchJitterSum += diff
-            
-            // Update Rekor Max Jitter (Sesi)
-            if diff > maxRecordedJitter {
-                maxRecordedJitter = diff
-            }
+            if diff > maxRecordedJitter { maxRecordedJitter = diff }
         }
         previousLatency = latency
         

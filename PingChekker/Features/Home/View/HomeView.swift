@@ -4,6 +4,12 @@
 //
 //  Created by Nunu Nugraha on 27/11/25.
 //
+//
+//  HomeView.swift
+//  PingChekker
+//
+//  Created by Nunu Nugraha on 27/11/25.
+//
 
 import SwiftUI
 
@@ -13,24 +19,35 @@ struct HomeView: View {
 
     var body: some View {
         ZStack {
-            // Background Ambient
+            // 1. Background Ambient
             viewModel.statusColor
                 .opacity(0.05)
                 .ignoresSafeArea()
             
+            // 2. Main Content (Tetap di tengah)
             HStack(spacing: 0) {
-                // KIRI: KUALITAS JARINGAN (Quality/MOS)
                 leftQualityColumn
                 
-                // DIVIDER
                 Rectangle()
                     .fill(Color.primary.opacity(0.1))
                     .frame(width: 1)
                     .padding(.vertical, 20)
                 
-                // KANAN: LATENCY (Speedometer & Pesan)
                 rightLatencyColumn
             }
+            
+            // 3. Settings Button (LAYER KHUSUS POJOK KANAN ATAS)
+            // Kita pake VStack+HStack+Spacer manual biar bisa dikasih .ignoresSafeArea()
+            VStack {
+                HStack {
+                    Spacer() // Dorong ke kanan
+                    settingsButton
+                        .padding([.top, .trailing], 10) // Padding manual dari ujung layar
+                }
+                Spacer() // Dorong ke atas
+            }
+            // 🔥 INI KUNCINYA: Biar nembus ke area Title Bar
+            .ignoresSafeArea()
         }
         .frame(width: 480, height: 220)
         #if os(macOS)
@@ -41,6 +58,19 @@ struct HomeView: View {
 
 // MARK: - View Components
 private extension HomeView {
+    
+    // Tombol Gear
+    var settingsButton: some View {
+        SettingsLink {
+            Image(systemName: "gearshape.fill")
+                .font(.system(size: 12))
+                .foregroundColor(.secondary.opacity(0.5))
+                .contentShape(Rectangle())
+        }
+        .buttonStyle(.plain)
+        // Hapus padding di sini, pindah ke container di atas biar presisi
+        .help("Open Settings (Cmd+,)")
+    }
     
     // --- KOLOM KIRI (TETAP SAMA) ---
     var leftQualityColumn: some View {
@@ -79,11 +109,11 @@ private extension HomeView {
         .padding(.vertical, 20)
     }
     
-    // --- KOLOM KANAN (UPDATED LAYOUT) ---
+    // --- KOLOM KANAN (TETAP SAMA) ---
     var rightLatencyColumn: some View {
         VStack(spacing: 0) {
             
-            // 1. Header
+            // Header
             HStack {
                 Circle()
                     .fill(viewModel.statusColor)
@@ -111,9 +141,8 @@ private extension HomeView {
             
             Spacer()
             
-            // 2. SPEEDOMETER CENTERED (REVISI POSISI MS)
+            // Speedometer Centered
             ZStack {
-                // Visual Gauge (Lengkungan)
                 SpeedometerView(
                     pingValue: parseLatency(viewModel.latencyText),
                     statusColor: viewModel.statusColor
@@ -121,10 +150,8 @@ private extension HomeView {
                 .frame(width: 140, height: 85)
                 .opacity(0.9)
                 
-                // Angka & Unit (Overlay di tengah bawah)
-                VStack(spacing: 4) { // Kasih jarak dikit antara Angka dan Badge
-                    
-                    // BARIS 1: Angka + Unit (Sebelahan)
+                VStack(spacing: 2) {
+                    // BARIS 1: Angka + Unit (ms)
                     HStack(alignment: .lastTextBaseline, spacing: 3) {
                         Text(parseLatencyString(viewModel.latencyText))
                             .font(.system(size: 42, weight: .heavy, design: .rounded))
@@ -134,11 +161,11 @@ private extension HomeView {
                             .shadow(color: .black.opacity(0.1), radius: 1, x: 0, y: 1)
                         
                         Text("ms")
-                            .font(.system(size: 16, weight: .bold, design: .rounded)) // Ukuran proporsional
+                            .font(.system(size: 16, weight: .bold, design: .rounded))
                             .foregroundColor(.secondary)
                     }
                     
-                    // BARIS 2: Badge Status (Di Bawahnya)
+                    // BARIS 2: Badge Status
                     Text(viewModel.categoryText.uppercased())
                         .font(.system(size: 10, weight: .bold))
                         .foregroundColor(.white)
@@ -146,13 +173,13 @@ private extension HomeView {
                         .padding(.vertical, 3)
                         .background(Capsule().fill(viewModel.statusColor))
                 }
-                .offset(y: 10) // Geser posisi biar pas di tengah lengkungan
+                .offset(y: 10)
             }
             .padding(.bottom, 10)
             
             Spacer()
             
-            // 3. Fun Message Bubble
+            // Fun Message Bubble
             HStack(alignment: .top, spacing: 10) {
                 Image(systemName: "quote.bubble.fill")
                     .font(.system(size: 14))
@@ -182,8 +209,7 @@ private extension HomeView {
     
     // MARK: - Helpers
     func parseLatency(_ text: String) -> Double {
-        let cleanText = text.replacingOccurrences(of: " ms", with: "")
-        return Double(cleanText) ?? 0.0
+        return Double(text.replacingOccurrences(of: " ms", with: "")) ?? 0.0
     }
     
     func parseLatencyString(_ text: String) -> String {

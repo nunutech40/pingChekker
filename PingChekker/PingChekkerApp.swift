@@ -4,7 +4,6 @@
 //
 //  Created by Nunu Nugraha on 16/03/25.
 //
-
 import SwiftUI
 
 @main
@@ -31,16 +30,14 @@ struct PingCheckerApp: App {
         }
         #endif
 
-        // --- MENU BAR ICON (UPDATED) ---
+        // --- MENU BAR ICON ---
         #if os(macOS)
         MenuBarExtra {
-            // Header Status
             Text("Status: \(viewModel.categoryText.uppercased())")
                 .font(.headline)
             
-            // Info Detail (Jitter diganti MOS Score)
             Text("Latency: \(viewModel.latencyText)")
-            Text("Quality Score: \(viewModel.mosScore) / 5.0") // <-- LEBIH BERGUNA
+            Text("Quality Score: \(viewModel.mosScore) / 5.0")
             
             Divider()
             
@@ -58,11 +55,14 @@ struct PingCheckerApp: App {
         }
         #endif
         
-        // Settings Window
+        // --- SETTINGS WINDOW (UPDATED) ---
         #if os(macOS)
         Settings {
-            Text("Settings Coming Soon")
-                .frame(width: 300, height: 100)
+            // PERBAIKAN DI SINI:
+            // Ganti Text("Coming Soon") dengan SettingsView()
+            SettingsView()
+                .frame(width: 350, height: 220) // Ukuran fix buat settings
+                .background(VisualEffect().ignoresSafeArea()) // Efek kaca biar senada
         }
         #endif
     }

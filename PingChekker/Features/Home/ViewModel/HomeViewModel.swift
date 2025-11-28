@@ -31,11 +31,16 @@ class HomeViewModel: ObservableObject {
     @Published var sessionAvgText: String = "-"
     @Published var isOffline: Bool = false
     
-    private let service = PingService.shared
+    // DEPENDENCY INJECTION: Menerima Protocol, bukan Class konkret
+    private var service: PingServiceProtocol
     
-    init() {
+    // Init menerima service dari luar (default value: PingService.shared)
+    // Ini memudahkan testing nanti (bisa inject MockService)
+    init(service: PingServiceProtocol = PingService.shared) {
+        self.service = service
+        
         setupBinding()
-        service.startMonitoring()
+        self.service.startMonitoring()
     }
     
     func setupBinding() {
