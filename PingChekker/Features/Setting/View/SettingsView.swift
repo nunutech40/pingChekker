@@ -7,6 +7,7 @@
 
 import SwiftUI
 
+// MARK: - 1. Data Model (Navigation Item)
 enum SettingsPanel: String, CaseIterable, Identifiable {
     case about = "About"
     case host = "Custom Host"
@@ -14,7 +15,6 @@ enum SettingsPanel: String, CaseIterable, Identifiable {
     
     var id: String { self.rawValue }
     
-    // Icon SF Symbols biar cantik
     var iconName: String {
         switch self {
         case .about: return "info.circle.fill"
@@ -24,54 +24,65 @@ enum SettingsPanel: String, CaseIterable, Identifiable {
     }
 }
 
+// MARK: - 2. Main Container
 struct SettingsView: View {
     
-    // Default pilihan menu pertama kali buka
     @State private var selectedPanel: SettingsPanel? = .about
     
     var body: some View {
         NavigationSplitView {
-            // --- SIDEBAR (MENU KIRI) ---
-            List(selection: $selectedPanel) {
-                
-                Section(header: Text("Information")) {
-                    NavigationLink(value: SettingsPanel.about) {
-                        Label(SettingsPanel.about.rawValue, systemImage: SettingsPanel.about.iconName)
-                    }
-                }
-                
-                Section(header: Text("Configuration")) {
-                    NavigationLink(value: SettingsPanel.host) {
-                        Label(SettingsPanel.host.rawValue, systemImage: SettingsPanel.host.iconName)
-                    }
-                    
-                    NavigationLink(value: SettingsPanel.history) {
-                        Label(SettingsPanel.history.rawValue, systemImage: SettingsPanel.history.iconName)
-                    }
-                }
-            }
-            .navigationTitle("Settings")
-            #if os(macOS)
-            .listStyle(.sidebar) // Gaya sidebar native macOS
-            #endif
-            
+            sidebarContent
         } detail: {
-            // --- DETAIL AREA (KANAN) ---
-            if let panel = selectedPanel {
-                switch panel {
-                case .about:
-                    AboutView()
-                case .host:
-                    HostSettingsView() // Ini codingan lama lo
-                case .history:
-                    HistoryView()
-                }
-            } else {
-                Text("Select an item")
-                    .foregroundColor(.secondary)
+            detailContent
+        }
+        // Ukuran Window optimal untuk Split View
+        .frame(width: 650, height: 400)
+    }
+}
+
+// MARK: - 3. Molecular Abstractions (View Components)
+private extension SettingsView {
+    
+    // Molekul 1: Sidebar Navigasi
+    var sidebarContent: some View {
+        List(selection: $selectedPanel) {
+            
+            Section(header: Text("Information")) {
+                navLink(for: .about)
+            }
+            
+            Section(header: Text("Configuration")) {
+                navLink(for: .host)
+                navLink(for: .history)
             }
         }
-        // Ukuran Window lebih lebar karena ada sidebar
-        .frame(width: 700, height: 350)
+        .navigationTitle("Settings")
+        #if os(macOS)
+        .listStyle(.sidebar)
+        #endif
+    }
+    
+    // Molekul 2: Logika Routing Konten
+    @ViewBuilder
+    var detailContent: some View {
+        if let panel = selectedPanel {
+            switch panel {
+            case .about:
+                AboutView()
+            case .host:
+                HostSettingsView()
+            case .history:
+                HistoryView()
+            }
+        } else {
+            ContentUnavailableView("Select an item", systemImage: "sidebar.left")
+        }
+    }
+    
+    // Molekul 3: Helper untuk Row Sidebar (Biar gak repetitif)
+    func navLink(for panel: SettingsPanel) -> some View {
+        NavigationLink(value: panel) {
+            Label(panel.rawValue, systemImage: panel.iconName)
+        }
     }
 }

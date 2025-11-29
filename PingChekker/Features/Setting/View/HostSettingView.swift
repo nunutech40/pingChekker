@@ -18,7 +18,7 @@ struct HostSettingsView: View {
                     .textFieldStyle(.roundedBorder)
                     .disableAutocorrection(true)
                 
-                Text("Default: 8.8.8.8 (Google). Current: \(store.targetHost)")
+                Text("Current: \(store.targetHost)")
                     .font(.caption)
                     .foregroundColor(.secondary)
             }
@@ -37,7 +37,6 @@ struct HostSettingsView: View {
     private func saveSettings() {
         let cleanHost = hostInput.trimmingCharacters(in: .whitespacesAndNewlines)
         guard !cleanHost.isEmpty else { return }
-        
         store.targetHost = cleanHost
         PingService.shared.updateHost(newHost: cleanHost)
     }
