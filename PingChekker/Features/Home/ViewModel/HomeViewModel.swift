@@ -2,8 +2,6 @@
 //  HomeViewModel.swift
 //  PingChekker
 //
-//  Created by Nunu Nugraha on 27/11/25.
-//
 
 import Foundation
 import SwiftUI
@@ -11,84 +9,243 @@ import SwiftUI
 class HomeViewModel: ObservableObject {
     
     // ==========================================
-    // MARK: - OUTPUT UI (LEFT COLUMN: SPEEDOMETER)
+    // MARK: - UI PROPERTIES (PUBLISHED)
     // ==========================================
-    // TAMBAH INI (Data mentah buat Speedometer & Logic)
+    
+    // Speedometer (Kiri)
     @Published var currentLatency: Double = 0.0
     @Published var latencyText: String = "- ms"
-    @Published var categoryText: String = "calculating" // Elite, Good, etc
+    @Published var categoryText: String = "calculating"
     @Published var statusColor: Color = .gray
-    @Published var statusMessage: String = "Menganalisa..." // Pesan Fun
+    @Published var statusMessage: String = "Menganalisa..."
     
-    // ==========================================
-    // MARK: - OUTPUT UI (RIGHT COLUMN: QUALITY)
-    // ==========================================
+    // Quality / MOS (Kanan)
     @Published var mosScore: String = "0.0"
-    @Published var qualityCondition: String = "..." // Excellent, Poor
-    @Published var qualityDescription: String = "Menunggu data..." // Rekomendasi Teknis
+    @Published var qualityCondition: String = "..."
+    @Published var qualityDescription: String = "Menunggu data..."
     @Published var qualityColor: Color = .gray
     @Published var qualityIcon: String = "hourglass"
     
-    // Info Tambahan
+    // Footer / Misc
     @Published var sessionAvgText: String = "-"
     @Published var isOffline: Bool = false
     
-    // DEPENDENCY INJECTION: Menerima Protocol, bukan Class konkret
+    // ==========================================
+    // MARK: - LOGIC PROPERTIES
+    // ==========================================
+    
     private var service: PingServiceProtocol
     
-    // Init menerima service dari luar (default value: PingService.shared)
-    // Ini memudahkan testing nanti (bisa inject MockService)
+    // Data valid terakhir sebelum RTO (buat disave)
+    private var lastGoodResult: PingResult?
+    
+    // ID Session Database (UUID). Kalau nil = Belum ada di DB (Draft).
+    private var activeSessionID: UUID?
+    
+    // ==========================================
+    // MARK: - INIT & BINDING
+    // ==========================================
+    
     init(service: PingServiceProtocol = PingService.shared) {
         self.service = service
-        
         setupBinding()
+        
+        // FIX SET STATUS LANGSUNG PAS START
+        HistoryService.shared.isMonitoring = true
         self.service.startMonitoring()
+        
+        NotificationCenter.default.addObserver(self, selector: #selector(handleResetSignal), name: .resetPingSession, object: nil)
+        NotificationCenter.default.addObserver(self, selector: #selector(handleStartSignal), name: .startPingSession, object: nil)
     }
     
     func setupBinding() {
-        // Callback Utama: Menerima PingResult yang sudah dihitung matang oleh Service
         service.onPingUpdate = { [weak self] result in
-            DispatchQueue.main.async {
-                self?.processResult(result)
-            }
+            DispatchQueue.main.async { self?.processResult(result) }
         }
         
         service.onError = { [weak self] errorMsg in
-            DispatchQueue.main.async {
-                self?.handleError(msg: errorMsg)
-            }
+            DispatchQueue.main.async { self?.handleError(msg: errorMsg) }
         }
     }
     
+    @objc private func handleStartSignal() {
+        
+        // 1. UPDATE STATUS SERVICE (Biar Tombol Settings jadi Disabled/Abu)
+        HistoryService.shared.isMonitoring = true
+        
+        // 2. RESET TAMPILAN UI (Biar Gak Offline Lagi)
+        DispatchQueue.main.async {
+            //  INI KUNCINYA: Paksa UI jadi Online
+            self.isOffline = false
+            
+            self.statusMessage = "Menghubungkan kembali..."
+            self.categoryText = "calculating"
+            self.statusColor = .yellow
+            self.qualityCondition = "Starting..."
+            
+            // Reset angka juga biar keliatan mulai dari nol
+            self.currentLatency = 0
+            self.latencyText = "..."
+        }
+        
+        // 3. JALANKAN MESIN
+        service.startMonitoring()
+    }
+    
+    @objc private func handleResetSignal() {
+        print("☢️ RECEIVED RESET SIGNAL. NUKING SESSION...")
+        
+        // 1. JANGAN FINALIZE SESI INI.
+        // Karena user minta "Clear All", berarti sesi sekarang juga dianggap sampah.
+        // Kita langsung putuskan hubungan dengan DB.
+        activeSessionID = nil
+        lastGoodResult = nil
+        
+        // 2. Reset UI ke Nol (Visual Reset)
+        DispatchQueue.main.async {
+            self.currentLatency = 0
+            self.latencyText = "Reset..."
+            self.mosScore = "0.0"
+            self.categoryText = "calculating"
+            self.statusColor = .gray
+            self.statusMessage = "Memulai ulang..."
+            self.qualityCondition = "..."
+        }
+        
+        // 3. Restart Logic (Biar nanti pas Ping masuk lagi, dia bikin Draft baru)
+        // Kita gak perlu stop service pinger-nya, cukup reset state logic-nya aja.
+        // Nanti pas 'processResult' jalan lagi (detik berikutnya), dia bakal liat:
+        // "Eh activeSessionID nil? Yaudah bikin Draft baru."
+    }
+    
+    // Pastikan remove observer pas mati (opsional di App lifecycle, tapi good practice)
+    deinit {
+        NotificationCenter.default.removeObserver(self)
+    }
+    
+    // ==========================================
+    // MARK: - MAIN PROCESS LOOP
+    // ==========================================
+    
     private func processResult(_ result: PingResult) {
-        // 1. Cek Koneksi Putus (Packet Loss 100%)
+        // CEK RTO (FATAL)
         if result.packetLossPercentage >= 100 {
             handleError(msg: "Request Timed Out")
             return
         }
         
         // Reset Error State
-        self.isOffline = false
+        if isOffline { self.isOffline = false }
         
-        // 2. UPDATE VISUAL KIRI (Realtime / Speedometer)
+        // 2. SIMPAN DATA VALID (Backup memory)
+        self.lastGoodResult = result
+        
+        // 3. LOGIC START SESSION (DRAFT)
+        // Cukup cek activeSessionID. Kalau nil, berarti sesi baru.
+        if activeSessionID == nil {
+            print("🔍 Checking DB for existing session...")
+            
+            // Panggil fungsi baru tadi.
+            // Dia bakal otomatis milih: Update Tanggal (kalau ada) ATAU Bikin Baru (kalau gak ada).
+            self.activeSessionID = HistoryService.shared.initializeSession(
+                host: SettingsStore.shared.targetHost
+            )
+            
+            // Logic Restore Visual (Biar UI gak 0.0 kalau ternyata ini resume)
+            checkAndRestoreHistory()
+        }
+        
+        // 4. UPDATE UI REALTIME (Speedometer)
         updateRealtimeUI(latency: result.latencyMs)
         
-        // 3. UPDATE VISUAL KANAN (Quality / MOS)
-        // Kita prioritaskan Session MOS (Jangka Panjang) biar stabil
-        // Kalau sesi masih baru (0), pake MOS sesaat
+        // 5. UPDATE UI QUALITY (MOS)
+        // Prioritaskan Session MOS biar stabil, kecuali masih 0 baru pake Instant MOS
         let scoreToJudge = result.sessionMOS > 0 ? result.sessionMOS : result.mosScore
         updateQualityUI(score: scoreToJudge, sessionLatency: result.sessionAvgLatency)
     }
     
-    // --- LOGIC 1: SPEEDOMETER (KIRI) ---
-    private func updateRealtimeUI(latency: Double) {
-        // 1. INI YANG BARU: Simpan data mentah buat SpeedometerView
-        self.currentLatency = latency
+    private func handleError(msg: String) {
+        // --- LOGIC DISCONNECT / FINALIZE ---
         
-        // 2. Format text buat UI (Tetap dipertahankan)
+        HistoryService.shared.isMonitoring = false
+        
+        // Cek flag isOffline biar gak spam save kalau RTO berkali-kali
+        if !isOffline {
+            print("⚠️ Disconnect Detected. Finalizing Session...")
+            
+            if let sessionID = activeSessionID, let validData = lastGoodResult {
+                // UPDATE Draft tadi dengan data valid terakhir
+                HistoryService.shared.updateSession(
+                    id: sessionID,
+                    latency: validData.latencyMs,
+                    mos: validData.sessionMOS > 0 ? validData.sessionMOS : validData.mosScore,
+                    status: categoryText // Status terakhir (misal "Good")
+                )
+            } else {
+                print("⚠️ Warning: No active session to finalize.")
+            }
+            
+            // RESET SESI (Penting!)
+            // Biar nanti pas konek lagi, dia bikin Draft UUID baru.
+            activeSessionID = nil
+            lastGoodResult = nil
+        }
+    
+        // Update UI jadi Tampilan Offline
+        setOfflineState()
+    }
+    
+    // ==========================================
+    // MARK: - HELPER FUNCTIONS
+    // ==========================================
+    
+    // Cek database, kalau ada history host+wifi ini, tampilkan MOS terakhirnya
+    private func checkAndRestoreHistory() {
+        let currentHost = SettingsStore.shared.targetHost
+        let currentNet = HistoryService.shared.getWiFiName()
+        
+        if let lastLog = HistoryService.shared.fetchLastLog(forHost: currentHost, networkName: currentNet) {
+            print("♻️ History Found! Restoring MOS: \(lastLog.mos)")
+            
+            DispatchQueue.main.async {
+                // Cuma update persepsi kualitas, jangan speedometer (biar jujur)
+                self.mosScore = String(format: "%.1f", lastLog.mos)
+                self.qualityCondition = lastLog.status ?? "Unknown"
+                // Kita gak update warna disini biar transisinya natural pas data baru masuk
+            }
+        } else {
+            print("🆕 No History. Starting fresh.")
+        }
+    }
+    
+    // Set UI ke mode RTO/Offline
+    private func setOfflineState() {
+        statusMessage = "Terputus"
+        statusColor = .gray
+        categoryText = "no connection"
+        latencyText = "RTO"
+        
+        qualityCondition = "OFFLINE"
+        qualityDescription = PingMessages.getRecommendation(for: "offline")
+        qualityColor = .gray
+        qualityIcon = "wifi.slash"
+        
+        // Reset angka jadi 0 atau strip
+        mosScore = "0.0"
+        sessionAvgText = "-"
+        
+        isOffline = true
+    }
+    
+    // ==========================================
+    // MARK: - UI UPDATERS (LOGIC WARNA)
+    // ==========================================
+    
+    // Logic Speedometer (Kiri)
+    private func updateRealtimeUI(latency: Double) {
+        self.currentLatency = latency
         self.latencyText = String(format: "%.0f ms", latency)
         
-        // 3. Logika Warna & Pesan (JANGAN DIUBAH/DIHAPUS)
         switch latency {
         case 0..<21:
             categoryText = "elite"; statusColor = .green
@@ -106,69 +263,68 @@ class HomeViewModel: ObservableObject {
             categoryText = "no connection"; statusColor = .gray
         }
         
-        // Ambil pesan fun
         self.statusMessage = PingMessages.getRandomMessage(for: categoryText)
     }
     
-    // --- LOGIC 2: QUALITY CARD (KANAN) ---
+    // Logic Quality MOS (Kanan)
     private func updateQualityUI(score: Double, sessionLatency: Double) {
         self.sessionAvgText = String(format: "Rata-rata Sesi: %.0f ms", sessionLatency)
         self.mosScore = String(format: "%.1f", score)
         
-        // Mapping SKOR MOS (1-5) ke Copywriting Rekomendasi
+        if score == 0.0 {
+            qualityCondition = "Monitoring..."
+            qualityColor = .blue
+            qualityIcon = "hourglass"
+            qualityDescription = "Mengumpulkan data awal..."
+            return // Keluar fungsi
+        }
+        
         var recommendationKey = "stable"
         
         if score >= 4.3 {
-            // 4.3 - 5.0: Dewa
             qualityCondition = "Excellent (Dewa)"
             qualityColor = .green
             qualityIcon = "trophy.fill"
             recommendationKey = "perfect"
         } else if score >= 4.0 {
-            // 4.0 - 4.2: Bagus
             qualityCondition = "Good (Bagus)"
             qualityColor = .green.opacity(0.8)
             qualityIcon = "hand.thumbsup.fill"
             recommendationKey = "stable"
         } else if score >= 3.5 {
-            // 3.5 - 3.9: Goyang Dikit
             qualityCondition = "Fair (Cukup)"
             qualityColor = .yellow
             qualityIcon = "exclamationmark.shield.fill"
-            recommendationKey = "unstable" // Mengarah ke warning jitter
+            recommendationKey = "unstable"
         } else if score >= 2.5 {
-            // 2.5 - 3.4: Lemot/Lag
             qualityCondition = "Poor (Buruk)"
             qualityColor = .orange
             qualityIcon = "wifi.exclamationmark"
             recommendationKey = "laggy"
         } else {
-            // 1.0 - 2.4: Hancur
             qualityCondition = "Critical (Hancur)"
             qualityColor = .red
             qualityIcon = "xmark.octagon.fill"
             recommendationKey = "critical"
         }
         
-        // Ambil teks panjang dari PingMessages
         self.qualityDescription = PingMessages.getRecommendation(for: recommendationKey)
     }
+}
+
+// ==========================================
+// MARK: - EXTENSIONS
+// ==========================================
+
+extension HomeViewModel {
     
-    private func handleError(msg: String) {
-        // UI Kiri
-        statusMessage = "Terputus"
-        statusColor = .gray
-        categoryText = "no connection"
-        latencyText = "RTO"
-        
-        // UI Kanan
-        qualityCondition = "OFFLINE"
-        qualityDescription = PingMessages.getRecommendation(for: "offline")
-        qualityColor = .gray
-        qualityIcon = "wifi.slash"
-        mosScore = "0.0"
-        sessionAvgText = "-"
-        
-        isOffline = true
+    // Fungsi ini dipanggil manual (misal tombol Stop atau Quit App)
+    // Memaksa simpan data terakhir ke DB
+    func forceStopSession() {
+        print("FORCE STOP TRIGGERED")
+        // Panggil logic finalize yang udah ada
+        handleError(msg: "Force Stop")
+        // Matikan mesin
+        service.stopMonitoring()
     }
 }

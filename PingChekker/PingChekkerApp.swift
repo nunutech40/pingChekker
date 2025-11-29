@@ -9,17 +9,37 @@ import SwiftUI
 @main
 struct PingCheckerApp: App {
     
+    // 1. Pasang AppDelegate (Satpam)
+    @NSApplicationDelegateAdaptor(AppDelegate.self) var appDelegate
+    
     @StateObject private var viewModel = HomeViewModel()
+    
+    // Inisialisasi persistance controller -> LocalDB -> CoreData
+    let persistanceController = PresistanceController.shared
 
     var body: some Scene {
         
         // --- WINDOW UTAMA (Dashboard) ---
-        WindowGroup {
+        WindowGroup(id: "dashboard") {
             ContentView(viewModel: viewModel)
                 // KONSISTENSI UKURAN:
                 // Samain sama desain HomeView lo (480x220). Jangan 300, jadi melar kosong bawahnya.
                 .frame(width: 480, height: 220)
                 .fixedSize()
+                
+            // Suntik local db yg udah di init di atas ke app
+                .environment(\.managedObjectContext, persistanceController.container.viewContext)
+                .background(WindowAccessor { window in
+                    if let window = window {
+                        // Pasang Satpam (Delegate) ke Window ini
+                        window.delegate = appDelegate
+                        
+                        // Kenalin ViewModel ke AppDelegate (buat save)
+                        appDelegate.homeViewModel = viewModel
+                        
+                        print("✅ Window Delegate Attached Successfully!")
+                    }
+                })
                 #if os(macOS)
                 .background(VisualEffect().ignoresSafeArea())
                 #endif
@@ -64,6 +84,7 @@ struct PingCheckerApp: App {
                 // HAPUS .frame(width: 350...) DI SINI!
                 // HAPUS .background(...) DI SINI!
                 // Biarkan SettingsView handle ukurannya sendiri dan pake style native.
+                .environment(\.managedObjectContext, persistanceController.container.viewContext)
         }
         #endif
     }

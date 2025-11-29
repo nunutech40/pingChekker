@@ -1,0 +1,13 @@
+sekarang breakdown history view nih,
+
+isinya adalah data jaringan,
+
+per jaringan isinya, id jaringan(unique), last MOS, last latency, 
+
+
+
+pake apa ya localnya? pake sqlite apa coredata aja? kan coredata itu aslinya sqlite jg, atau pake realm?
+
+
+
+yg mana, knp?

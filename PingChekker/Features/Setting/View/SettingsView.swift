@@ -29,6 +29,10 @@ struct SettingsView: View {
     
     @State private var selectedPanel: SettingsPanel? = .about
     
+    @StateObject private var viewModel = SettingsViewModel()
+    
+    @Environment(\.openWindow) var openWindow
+    
     var body: some View {
         NavigationSplitView {
             sidebarContent
@@ -47,14 +51,30 @@ private extension SettingsView {
     var sidebarContent: some View {
         List(selection: $selectedPanel) {
             
-            Section(header: Text("Information")) {
-                navLink(for: .about)
+            // MENU ACTION
+            Section {
+                // Di dalam sidebarContent
+                Button {
+                    viewModel.resumeMonitoring()
+                    openWindow(id: "dashboard")
+                } label: {
+                    HStack {
+                        Image(systemName: viewModel.isMonitoring ? "waveform.path.ecg" : "play.fill")
+                        Text(viewModel.isMonitoring ? "Monitoring Active" : "Resume Monitoring")
+                            .fontWeight(.semibold)
+                    }
+                    // Kalau Monitoring TRUE -> Warna Secondary (Abu)
+                    // Kalau Monitoring FALSE -> Warna Green (Hijau)
+                    .foregroundColor(viewModel.isMonitoring ? .secondary : .green)
+                }
+                .buttonStyle(.plain)
+                // Kalau Monitoring TRUE -> Tombol DISABLED
+                .disabled(viewModel.isMonitoring)
             }
             
-            Section(header: Text("Configuration")) {
-                navLink(for: .host)
-                navLink(for: .history)
-            }
+            // ... (Section lain SAMA AJA) ...
+            Section(header: Text("Information")) { navLink(for: .about) }
+            Section(header: Text("Configuration")) { navLink(for: .host); navLink(for: .history) }
         }
         .navigationTitle("Settings")
         #if os(macOS)
