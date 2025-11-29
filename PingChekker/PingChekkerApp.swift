@@ -13,9 +13,11 @@ struct PingCheckerApp: App {
 
     var body: some Scene {
         
-        // --- WINDOW UTAMA ---
+        // --- WINDOW UTAMA (Dashboard) ---
         WindowGroup {
             ContentView(viewModel: viewModel)
+                // KONSISTENSI UKURAN:
+                // Samain sama desain HomeView lo (480x220). Jangan 300, jadi melar kosong bawahnya.
                 .frame(width: 480, height: 220)
                 .fixedSize()
                 #if os(macOS)
@@ -30,7 +32,7 @@ struct PingCheckerApp: App {
         }
         #endif
 
-        // --- MENU BAR ICON ---
+        // --- MENU BAR ICON (Tetap) ---
         #if os(macOS)
         MenuBarExtra {
             Text("Status: \(viewModel.categoryText.uppercased())")
@@ -55,14 +57,13 @@ struct PingCheckerApp: App {
         }
         #endif
         
-        // --- SETTINGS WINDOW (UPDATED) ---
+        // --- SETTINGS WINDOW (FIXED) ---
         #if os(macOS)
         Settings {
-            // PERBAIKAN DI SINI:
-            // Ganti Text("Coming Soon") dengan SettingsView()
             SettingsView()
-                .frame(width: 350, height: 220) // Ukuran fix buat settings
-                .background(VisualEffect().ignoresSafeArea()) // Efek kaca biar senada
+                // HAPUS .frame(width: 350...) DI SINI!
+                // HAPUS .background(...) DI SINI!
+                // Biarkan SettingsView handle ukurannya sendiri dan pake style native.
         }
         #endif
     }

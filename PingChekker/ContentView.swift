@@ -17,7 +17,6 @@ struct ContentView: View {
         HomeView(viewModel: viewModel)
         // Kita pertahankan frame minimum ini untuk support macOS
         // agar windownya tidak terlalu kecil saat dibuka di Mac
-        .frame(width: 480, height: 300)
     }
 }
 

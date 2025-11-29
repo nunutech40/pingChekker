@@ -144,7 +144,7 @@ private extension HomeView {
             // Speedometer Centered
             ZStack {
                 SpeedometerView(
-                    pingValue: parseLatency(viewModel.latencyText),
+                    pingValue: viewModel.currentLatency,
                     statusColor: viewModel.statusColor
                 )
                 .frame(width: 140, height: 85)
@@ -205,11 +205,6 @@ private extension HomeView {
             .padding(.horizontal, 20)
             .padding(.bottom, 20)
         }
-    }
-    
-    // MARK: - Helpers
-    func parseLatency(_ text: String) -> Double {
-        return Double(text.replacingOccurrences(of: " ms", with: "")) ?? 0.0
     }
     
     func parseLatencyString(_ text: String) -> String {

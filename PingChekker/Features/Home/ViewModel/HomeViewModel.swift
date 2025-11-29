@@ -13,6 +13,8 @@ class HomeViewModel: ObservableObject {
     // ==========================================
     // MARK: - OUTPUT UI (LEFT COLUMN: SPEEDOMETER)
     // ==========================================
+    // TAMBAH INI (Data mentah buat Speedometer & Logic)
+    @Published var currentLatency: Double = 0.0
     @Published var latencyText: String = "- ms"
     @Published var categoryText: String = "calculating" // Elite, Good, etc
     @Published var statusColor: Color = .gray
@@ -80,9 +82,13 @@ class HomeViewModel: ObservableObject {
     
     // --- LOGIC 1: SPEEDOMETER (KIRI) ---
     private func updateRealtimeUI(latency: Double) {
+        // 1. INI YANG BARU: Simpan data mentah buat SpeedometerView
+        self.currentLatency = latency
+        
+        // 2. Format text buat UI (Tetap dipertahankan)
         self.latencyText = String(format: "%.0f ms", latency)
         
-        // Tentukan Kategori Speedometer (Warna & Status Singkat)
+        // 3. Logika Warna & Pesan (JANGAN DIUBAH/DIHAPUS)
         switch latency {
         case 0..<21:
             categoryText = "elite"; statusColor = .green
