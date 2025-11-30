@@ -19,12 +19,11 @@ class WifiDetailViewModel: ObservableObject {
     private var timer: Timer?
     
     init() {
-        // Fetch sekali pas init, tapi JANGAN nyalain timer di sini.
-        // Timer cuma boleh nyala kalau diperintah View (onAppear).
+        // Fetch data awal
         refreshData()
     }
     
-    // 🔥 PENGAMAN TAMBAHAN: Pas ViewModel ini dibuang dari memori, Timer harus mati.
+    // Pastikan timer mati kalau ViewModel dibuang
     deinit {
         stopLiveUpdate()
     }
@@ -32,10 +31,8 @@ class WifiDetailViewModel: ObservableObject {
     // MARK: - Actions
     
     func startLiveUpdate() {
-        // Safety: Matikan timer lama kalau ada, biar gak numpuk jadi double speed
+        // Safety: Matikan timer lama kalau ada
         stopLiveUpdate()
-        
-        print("📡 [WifiDetailVM] Starting Live Update (2s interval)...")
         
         // Update tiap 2 detik agar indikator sinyal hidup
         timer = Timer.scheduledTimer(withTimeInterval: 2.0, repeats: true) { [weak self] _ in
@@ -44,11 +41,8 @@ class WifiDetailViewModel: ObservableObject {
     }
     
     func stopLiveUpdate() {
-        if timer != nil {
-            print("🛑 [WifiDetailVM] Stopping Live Update.")
-            timer?.invalidate()
-            timer = nil
-        }
+        timer?.invalidate()
+        timer = nil
     }
     
     func refreshData() {
@@ -60,8 +54,8 @@ class WifiDetailViewModel: ObservableObject {
             }
         } else {
             DispatchQueue.main.async {
-                // Pesan error jika interface WiFi tidak ditemukan atau izin lokasi ditolak
-                // GANTI KEY ENGLISH
+                // 🔥 FIX: GANTI PESAN ERROR JADI ENGLISH KEY
+                // (Teks ini sudah ada terjemahannya di Localizable.xcstrings)
                 self.errorMessage = "No Wi-Fi interface found or location permission denied. Please ensure Wi-Fi is on and permissions are granted in System Settings."
                 self.wifiInfo = nil
             }

@@ -13,7 +13,7 @@ struct WifiDetailView: View {
     
     var body: some View {
         Form {
-            Section(header: Text("Current Network")) { // Key English
+            Section(header: Text("Current Network")) { // Key: "Current Network"
                 if let wifi = viewModel.wifiInfo {
                     
                     // 1. HEADER (SSID & BSSID)
@@ -28,9 +28,9 @@ struct WifiDetailView: View {
                                 .font(.headline)
                             Text(wifi.bssid)
                                 .font(.caption)
-                                .monospaced() // Font coding buat MAC Address
+                                .monospaced()
                                 .foregroundColor(.secondary)
-                                .textSelection(.enabled) // Biar bisa dicopy
+                                .textSelection(.enabled)
                         }
                     }
                     .padding(.vertical, 8)
@@ -48,18 +48,12 @@ struct WifiDetailView: View {
                                 .foregroundColor(viewModel.getSignalColor(wifi.rssi))
                         }
                         
-                        // Logic Bar Sinyal
                         GeometryReader { geo in
                             ZStack(alignment: .leading) {
-                                // Background Track
                                 Capsule()
                                     .fill(Color.secondary.opacity(0.2))
                                     .frame(height: 8)
                                 
-                                // Active Bar
-                                // Normalisasi RSSI (-100 sampe -30) jadi (0.0 sampe 1.0)
-                                // -100 dBm = 0% (Mati)
-                                // -30 dBm = 100% (Sempurna)
                                 let percent = max(0, min(1.0, Double(100 + wifi.rssi) / 70.0))
                                 
                                 Capsule()
@@ -74,12 +68,28 @@ struct WifiDetailView: View {
                     
                     Divider()
                     
-                    // 3. TECHNICAL DETAILS (GRID)
+                    // 3. DETAILS (GRID LENGKAP)
                     Group {
-                        LabeledContent("Signal Quality", value: wifi.signalQuality) // Key
-                        LabeledContent("Noise Level", value: "\(wifi.noise) dBm") // Key
-                        LabeledContent("Channel", value: "\(wifi.channel) (\(wifi.band))") // Key
-                        LabeledContent("Security", value: wifi.security) // Key
+                        // 🔥 FIX: Pake Closure syntax buat LocalizedStringKey
+                        // "EXCELLENT" -> "SEMPURNA (DEWA)"
+                        LabeledContent("Signal Quality") {
+                            Text(LocalizedStringKey(wifi.signalQuality))
+                        }
+                        
+                        LabeledContent("Tx Rate", value: String(format: "%.0f Mbps", wifi.txRate))
+                        LabeledContent("Standard", value: wifi.phyMode)
+                        
+                        Divider().padding(.vertical, 4)
+                        
+                        LabeledContent("Noise Level", value: "\(wifi.noise) dBm")
+                        LabeledContent("Channel", value: "\(wifi.channel) (\(wifi.band))")
+                        LabeledContent("Security", value: wifi.security)
+                        
+                        Divider().padding(.vertical, 4)
+                        
+                        LabeledContent("Interface", value: wifi.interfaceName)
+                        LabeledContent("Local IP", value: wifi.ipAddress)
+                            .textSelection(.enabled)
                     }
                     
                 } else if let error = viewModel.errorMessage {
@@ -88,7 +98,9 @@ struct WifiDetailView: View {
                         Image(systemName: "exclamationmark.triangle.fill")
                             .font(.largeTitle)
                             .foregroundColor(.orange)
-                        Text(error)
+                        
+                        // 🔥 PENTING: Bungkus error message dengan LocalizedStringKey
+                        Text(LocalizedStringKey(error))
                             .font(.caption)
                             .multilineTextAlignment(.center)
                             .foregroundColor(.secondary)
@@ -97,18 +109,16 @@ struct WifiDetailView: View {
                     .padding()
                     
                 } else {
-                    // LOADING STATE
+                    // LOADING
                     HStack {
                         Spacer()
-                        ProgressView()
-                            .scaleEffect(0.8)
+                        ProgressView().scaleEffect(0.8)
                         Spacer()
                     }
                     .padding()
                 }
             }
             
-            // BUTTON REFRESH MANUAL
             Section {
                 Button {
                     viewModel.refreshData()
@@ -118,12 +128,8 @@ struct WifiDetailView: View {
             }
         }
         .formStyle(.grouped)
-        .onAppear {
-            viewModel.startLiveUpdate()
-        }
-        .onDisappear {
-            viewModel.stopLiveUpdate()
-        }
+        .onAppear { viewModel.startLiveUpdate() }
+        .onDisappear { viewModel.stopLiveUpdate() }
     }
 }
 

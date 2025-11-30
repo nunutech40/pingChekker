@@ -18,6 +18,12 @@ struct WifiDetails {
     let band: String   // 2.4GHz or 5GHz
     let security: String
     
+    // 🔥 DATA BARU (PRO INFO)
+    let txRate: Double  // Transmit Rate (Mbps)
+    let phyMode: String // Wi-Fi Standard (Wi-Fi 5, 6, etc)
+    let interfaceName: String // en0
+    let ipAddress: String // Local IP
+    
     // Computed Property buat Kualitas Sinyal
     var signalQuality: String {
         switch rssi {
@@ -56,6 +62,25 @@ class WifiService {
             sec = "Secured (WPA/WPA2)"
         }
         
+        // 🔥 AMBIL DATA PRO
+        let txRate = interface.transmitRate() // Mbps
+        let intName = interface.interfaceName ?? "?"
+        
+        // Translate PHY Mode (Bahasa Teknis -> Manusia)
+        let phyModeString: String
+        switch interface.activePHYMode() {
+        case .mode11ax: phyModeString = "Wi-Fi 6 (802.11ax)"
+        case .mode11ac: phyModeString = "Wi-Fi 5 (802.11ac)"
+        case .mode11n:  phyModeString = "Wi-Fi 4 (802.11n)"
+        case .mode11g:  phyModeString = "802.11g"
+        case .mode11a:  phyModeString = "802.11a"
+        case .mode11b:  phyModeString = "802.11b"
+        default:        phyModeString = "Unknown Standard"
+        }
+        
+        // Ambil IP Address (Logic Helper di bawah)
+        let ip = getLocalIPAddress(for: intName)
+        
         return WifiDetails(
             ssid: ssid,
             bssid: bssid,
@@ -63,7 +88,36 @@ class WifiService {
             noise: noise,
             channel: Int(channel),
             band: band,
-            security: sec
+            security: sec,
+            txRate: txRate,
+            phyMode: phyModeString,
+            interfaceName: intName,
+            ipAddress: ip
         )
+    }
+    
+    // Helper: Ngorek sistem buat cari IP Address dari Interface Name (en0)
+    private func getLocalIPAddress(for interfaceName: String) -> String {
+        var address = "Not Found"
+        var ifaddr: UnsafeMutablePointer<ifaddrs>?
+        
+        if getifaddrs(&ifaddr) == 0 {
+            var ptr = ifaddr
+            while ptr != nil {
+                defer { ptr = ptr?.pointee.ifa_next }
+                let interface = ptr?.pointee
+                let addrFamily = interface?.ifa_addr.pointee.sa_family
+                
+                if addrFamily == UInt8(AF_INET) || addrFamily == UInt8(AF_INET6) {
+                    if let name = String(cString: (interface?.ifa_name)!, encoding: .utf8), name == interfaceName {
+                        var hostname = [CChar](repeating: 0, count: Int(NI_MAXHOST))
+                        getnameinfo(interface?.ifa_addr, socklen_t((interface?.ifa_addr.pointee.sa_len)!), &hostname, socklen_t(hostname.count), nil, socklen_t(0), NI_NUMERICHOST)
+                        address = String(cString: hostname)
+                    }
+                }
+            }
+            freeifaddrs(ifaddr)
+        }
+        return address
     }
 }

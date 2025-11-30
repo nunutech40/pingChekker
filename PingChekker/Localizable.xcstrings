@@ -776,6 +776,9 @@
         }
       }
     },
+    "Interface" : {
+
+    },
     "International (Ko-fi / PayPal)" : {
       "localizations" : {
         "id" : {
@@ -797,6 +800,9 @@
       }
     },
     "Latency: %@" : {
+
+    },
+    "Local IP" : {
 
     },
     "Menganalisa jaringan..." : {
@@ -1101,6 +1107,9 @@
         }
       }
     },
+    "Standard" : {
+
+    },
     "STARTING..." : {
       "extractionState" : "stale",
       "localizations" : {
@@ -1178,6 +1187,9 @@
           }
         }
       }
+    },
+    "Tx Rate" : {
+
     },
     "UNKNOWN" : {
       "extractionState" : "stale",
