@@ -112,9 +112,9 @@ private extension HomeView {
                 
                 VStack(spacing: 2) {
                     HStack(alignment: .lastTextBaseline, spacing: 3) {
-                        // 🔥 HAPUS PARSING STRING. PAKE DOUBLE LANGSUNG 🔥
+                        // HAPUS PARSING STRING. PAKE DOUBLE LANGSUNG
                         Text(String(format: "%.0f", viewModel.currentLatency))
-                            .font(.system(size: 42, weight: .heavy, design: .rounded))
+                            .font(.system(size: 28, weight: .heavy, design: .rounded))
                             .foregroundColor(.primary)
                             .monospacedDigit()
                             .contentTransition(.numericText())
@@ -127,8 +127,10 @@ private extension HomeView {
                     Text(viewModel.categoryText.uppercased())
                         .font(.system(size: 10, weight: .bold))
                         .foregroundColor(.white)
+                        .minimumScaleFactor(0.5)
                         .padding(.horizontal, 8).padding(.vertical, 3)
                         .background(Capsule().fill(viewModel.statusColor))
+                        .frame(maxWidth: 100)
                 }
                 .offset(y: 10)
             }

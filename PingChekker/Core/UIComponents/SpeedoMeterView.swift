@@ -8,44 +8,71 @@
 import SwiftUI
 
 struct SpeedometerView: View {
-    var pingValue: Double // Nilai latency dalam ms
+    
+    // Input Data
+    var pingValue: Double
     var statusColor: Color
+    
+    // Konfigurasi Visual
+    private let trackWidth: CGFloat = 12
+    private let maxPing: Double = 500 // Batas atas meteran (500ms)
     
     var body: some View {
         ZStack {
-            // Setengah Lingkaran Speedometer
-            ArcShape()
-                .stroke(statusColor, lineWidth: 10)
-                .frame(width: 150, height: 75)
+            // 1. Track Background (Abu-abu tipis)
+            Circle()
+                .trim(from: 0, to: 0.5) // Setengah lingkaran
+                .stroke(Color.secondary.opacity(0.15), style: StrokeStyle(lineWidth: trackWidth, lineCap: .round))
+                .rotationEffect(.degrees(180))
             
-            // Jarum Penunjuk
-            Rectangle()
-                .fill(statusColor)
-                .frame(width: 3, height: 40)
-                .offset(y: -20) // Pusat jarum
-                .rotationEffect(.degrees(angleForPing(pingValue)), anchor: .bottom)
+            // 2. Active Progress (Warna Status)
+            Circle()
+                .trim(from: 0, to: progressValue())
+                .stroke(
+                    AngularGradient(
+                        gradient: Gradient(colors: [statusColor.opacity(0.6), statusColor]),
+                        center: .center,
+                        startAngle: .degrees(180),
+                        endAngle: .degrees(360)
+                    ),
+                    style: StrokeStyle(lineWidth: trackWidth, lineCap: .round)
+                )
+                .rotationEffect(.degrees(180))
+            // Animasi Spring biar jarumnya membal enak dilihat
+                .animation(.spring(response: 0.6, dampingFraction: 0.7), value: pingValue)
+            
+            // 3. Dekorasi Titik-titik (Scale)
+            ForEach(0..<5) { i in
+                Rectangle()
+                    .fill(Color.secondary.opacity(0.2))
+                    .frame(width: 1, height: 8)
+                    .offset(y: -40) // Jarak dari center
+                    .rotationEffect(.degrees(Double(i) * 45 - 90))
+            }
+            .offset(y: 15) // Penyesuaian posisi titik
         }
+        .frame(height: 100) // Tinggi Container
+        .padding(.bottom, -50) // Potong ruang kosong bawah (karena circle aslinya bulat)
     }
     
-    // Fungsi untuk menghitung sudut jarum berdasarkan ping
-    private func angleForPing(_ ping: Double) -> Double {
-        let minPing = 0.0
-        let maxPing = 600.0 // Batas maksimum "Unplayable"
-        let normalized = min(max((ping - minPing) / (maxPing - minPing), 0), 1)
-        return (normalized * 180) - 90 // Sudut antara -90° sampai 90°
+    // Helper: Konversi Ping (0-500) ke Progress (0.0 - 0.5)
+    // Kenapa 0.5? Karena kita cuma pake setengah lingkaran (Arc).
+    private func progressValue() -> CGFloat {
+        // Cap di 500ms biar gak bablas muter
+        let cappedPing = min(pingValue, maxPing)
+        
+        // Rumus: (Ping / Max) * 0.5
+        return CGFloat((cappedPing / maxPing) * 0.5)
     }
 }
 
-// Bentuk Arc (Setengah Lingkaran)
-struct ArcShape: Shape {
-    func path(in rect: CGRect) -> Path {
-        var path = Path()
-        path.addArc(center: CGPoint(x: rect.midX, y: rect.maxY),
-                    radius: rect.width / 2,
-                    startAngle: .degrees(180),
-                    endAngle: .degrees(0),
-                    clockwise: false)
-        return path
+// Preview buat testing visual doang
+#Preview {
+    VStack(spacing: 40) {
+        SpeedometerView(pingValue: 20, statusColor: .green)
+        SpeedometerView(pingValue: 120, statusColor: .orange)
+        SpeedometerView(pingValue: 600, statusColor: .purple)
     }
+    .frame(width: 300, height: 400)
+    .padding()
 }
-
