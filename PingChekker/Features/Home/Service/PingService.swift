@@ -36,6 +36,7 @@ struct PingResult {
     let sessionMaxJitter: Double // Rekor terburuk
     let sessionMOS: Double
 }
+
 class PingService: NSObject, SimplePingDelegate, PingServiceProtocol {
     
     static let shared = PingService()
@@ -149,7 +150,8 @@ class PingService: NSObject, SimplePingDelegate, PingServiceProtocol {
         let loss = sent > 0 ? ((sent - received) / sent) * 100.0 : 0.0
         let safeLoss = max(0.0, min(100.0, loss))
         
-        let instantMOS = calculateMOSScore(latency: avgLatency, jitter: avgJitter, loss: safeLoss)
+        // Gak pake fungsi private lagi
+        let instantMOS = MOSCalculactor.calculate(latency: avgLatency, jitter: avgJitter, packetLoss: safeLoss)
         
         // --- DATA SESI ---
         if received > 0 {
@@ -167,7 +169,8 @@ class PingService: NSObject, SimplePingDelegate, PingServiceProtocol {
         let sessionLoss = sessionSent > 0 ? ((sessionSent - sessionRecv) / sessionSent) * 100.0 : 0.0
         let safeSessionLoss = max(0.0, min(100.0, sessionLoss))
         
-        let sessionMOS = calculateMOSScore(latency: sessionAvgLat, jitter: sessionAvgJit, loss: safeSessionLoss)
+        //  PANGGIL HELPER MOSCALCULATOR BUAT SESI JUGA
+        let sessionMOS = MOSCalculactor.calculate(latency: sessionAvgLat, jitter: sessionAvgJit, packetLoss: safeSessionLoss)
         
         // --- LAPOR ---
         let result = PingResult(
@@ -190,27 +193,7 @@ class PingService: NSObject, SimplePingDelegate, PingServiceProtocol {
         currentBatchJitterSum = 0.0
     }
     
-    private func calculateMOSScore(latency: Double, jitter: Double, loss: Double) -> Double {
-        if latency == 0 && loss >= 100 { return 1.0 }
-        
-        let effectiveLatency = latency + (jitter * 2) + 10.0
-        var rValue: Double = 0.0
-        
-        if effectiveLatency < 160 {
-            rValue = 93.2 - (effectiveLatency / 40.0)
-        } else {
-            rValue = 93.2 - ((effectiveLatency - 120.0) / 10.0)
-        }
-        
-        rValue = rValue - (loss * 2.5)
-        rValue = max(0.0, min(100.0, rValue))
-        
-        var mos: Double = 1.0
-        if rValue > 0 {
-            mos = 1.0 + (0.035 * rValue) + (rValue * (rValue - 60.0) * (100.0 - rValue) * 0.000007)
-        }
-        return max(1.0, min(5.0, mos))
-    }
+    // 🗑 FUNGSI calculateMOSScore YANG LAMA UDAH DIHAPUS
     
     // MARK: - SimplePingDelegate
     func simplePing(_ pinger: SimplePing, didStartWithAddress address: Data) {

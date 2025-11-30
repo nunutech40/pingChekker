@@ -13,9 +13,12 @@ class HistoryService {
     
     static let shared = HistoryService()
     
-    // Pake viewContext langsung biar UI reaktif instan
+    // Biar bisa diganti pas test.
+    let controller: PresistanceController
+    
+    // Helper context biar kodingan bawah gak perlu diubah banyak
     private var context: NSManagedObjectContext {
-        return PresistanceController.shared.container.viewContext
+        return controller.container.viewContext
     }
     
     var isMonitoring: Bool = false {
@@ -30,7 +33,9 @@ class HistoryService {
         }
     }
     
-    private init() {}
+    init(controller: PresistanceController = PresistanceController.shared) {
+        self.controller = controller
+    }
     
     // ==========================================
     // MARK: - SESSION LOGIC (MAIN THREAD)
@@ -80,7 +85,8 @@ class HistoryService {
     }
     
     func updateSession(id: UUID, latency: Double, mos: Double, status: String) {
-        context.perform { // Gak perlu wait, fire and forget
+        // GANTI perform -> performAndWait (Biar Test Gak Balapan)
+        context.performAndWait { // Gak perlu wait, fire and forget
             let request: NSFetchRequest<NetworkHistory> = NetworkHistory.fetchRequest()
             request.predicate = NSPredicate(format: "id == %@", id as CVarArg)
             request.fetchLimit = 1
@@ -109,30 +115,33 @@ class HistoryService {
     }
     
     func deleteAll() {
-        let fetchRequest: NSFetchRequest<NSFetchRequestResult> = NetworkHistory.fetchRequest()
-        let deleteRequest = NSBatchDeleteRequest(fetchRequest: fetchRequest)
+        // Karena kita pake viewContext (Main Thread), batch delete agak tricky update UI-nya.
+        // Cara paling aman & reaktif buat main context: Fetch lalu Delete satu-satu.
+        // (Batch delete bypass context, jadi UI gak tau kalau ada yg kehapus kecuali di-merge paksa).
         
-        // 🔥 1. Minta return ID object yang dihapus
-        deleteRequest.resultType = .resultTypeObjectIDs
-        
-        do {
-            // Eksekusi Delete
-            let result = try context.execute(deleteRequest) as? NSBatchDeleteResult
-            let objectIDArray = result?.result as? [NSManagedObjectID]
+        context.performAndWait {
+            let fetchRequest = NSFetchRequest<NSFetchRequestResult>(entityName: "NetworkHistory")
+            // Batch Delete
+            let deleteRequest = NSBatchDeleteRequest(fetchRequest: fetchRequest)
+            deleteRequest.resultType = .resultTypeObjectIDs
             
-            // 🔥 2. PENTING: Kasih tau ViewContext kalau data ini udah ilang
-            let changes = [NSDeletedObjectsKey: objectIDArray ?? []]
-            NSManagedObjectContext.mergeChanges(fromRemoteContextSave: changes, into: [context])
-            
-            print("🗑 All history cleared & UI Updated instantly.")
-            
-        } catch {
-            print("❌ Delete failed: \(error)")
+            do {
+                let result = try self.context.execute(deleteRequest) as? NSBatchDeleteResult
+                let objectIDArray = result?.result as? [NSManagedObjectID]
+                
+                // Merge changes biar UI sadar
+                let changes = [NSDeletedObjectsKey: objectIDArray ?? []]
+                NSManagedObjectContext.mergeChanges(fromRemoteContextSave: changes, into: [self.context])
+                
+                print("🗑 All history cleared.")
+            } catch {
+                print("❌ Delete failed: \(error)")
+            }
         }
     }
     
     func deleteItem(_ item: NetworkHistory) {
-        context.perform {
+        context.performAndWait{
             self.context.delete(item)
             try? self.context.save()
         }
@@ -141,11 +150,11 @@ class HistoryService {
     func getWiFiName() -> String { return getNetworkDetails().ssid }
     
     private func getNetworkDetails() -> (ssid: String, bssid: String) {
-#if os(macOS)
+        #if os(macOS)
         if let interface = CWWiFiClient.shared().interface() {
             return (interface.ssid() ?? "Wired/Unknown", interface.bssid() ?? "00:00")
         }
-#endif
+        #endif
         return ("Unknown Network", "-")
     }
 }
