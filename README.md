@@ -84,6 +84,9 @@ Mengikuti MVVM:
 - CFNetwork + SimplePing
 - macOS 12+
 
+## Flow Chart Fitur
+https://app.diagrams.net/#DDiagram%20Tanpa%20Judul.drawio#%7B%22pageId%22%3A%22Gh7RQAuNiNxMG_v7OheC%22%7D
+
 ## 📦 Instalasi
 ```
 git clone https://github.com/yourusername/PingChekker.git
