@@ -10,7 +10,9 @@ import SwiftUI
 // MARK: - 1. Data Model (Navigation Item)
 enum SettingsPanel: String, CaseIterable, Identifiable {
     case about = "About"
+    case support = "Support Us"
     case host = "Custom Host"
+    case wifiDetail = "WiFi Details"
     case history = "Network History"
     
     var id: String { self.rawValue }
@@ -18,7 +20,9 @@ enum SettingsPanel: String, CaseIterable, Identifiable {
     var iconName: String {
         switch self {
         case .about: return "info.circle.fill"
+        case .support: return "heart.fill"
         case .host: return "network"
+        case .wifiDetail: return "wifi"
         case .history: return "clock.arrow.circlepath"
         }
     }
@@ -31,6 +35,7 @@ struct SettingsView: View {
     
     @StateObject private var viewModel = SettingsViewModel()
     
+    // Mantra pembuka window
     @Environment(\.openWindow) var openWindow
     
     var body: some View {
@@ -39,7 +44,6 @@ struct SettingsView: View {
         } detail: {
             detailContent
         }
-        // Ukuran Window optimal untuk Split View
         .frame(width: 650, height: 400)
     }
 }
@@ -51,35 +55,45 @@ private extension SettingsView {
     var sidebarContent: some View {
         List(selection: $selectedPanel) {
             
-            // MENU ACTION
+            // MENU ACTION (RESUME)
             Section {
-                // Di dalam sidebarContent
                 Button {
+                    // 1. Jalanin Logic Resume
                     viewModel.resumeMonitoring()
+                    // 2. Buka Window Dashboard (Penting!)
                     openWindow(id: "dashboard")
+                    
                 } label: {
                     HStack {
                         Image(systemName: viewModel.isMonitoring ? "waveform.path.ecg" : "play.fill")
+                        
+                        // Teks berubah sesuai status
                         Text(viewModel.isMonitoring ? "Monitoring Active" : "Resume Monitoring")
                             .fontWeight(.semibold)
                     }
-                    // Kalau Monitoring TRUE -> Warna Secondary (Abu)
-                    // Kalau Monitoring FALSE -> Warna Green (Hijau)
+                    // Warna: Sekunder (Abu) kalau jalan, Hijau kalau mati
                     .foregroundColor(viewModel.isMonitoring ? .secondary : .green)
                 }
                 .buttonStyle(.plain)
-                // Kalau Monitoring TRUE -> Tombol DISABLED
+                // Tombol MATI kalau monitoring JALAN
                 .disabled(viewModel.isMonitoring)
             }
             
-            // ... (Section lain SAMA AJA) ...
-            Section(header: Text("Information")) { navLink(for: .about) }
-            Section(header: Text("Configuration")) { navLink(for: .host); navLink(for: .history) }
+            Section(header: Text("Information")) {
+                navLink(for: .about)
+                navLink(for: .support)
+            }
+            
+            Section(header: Text("Configuration")) {
+                navLink(for: .host)
+                navLink(for: .wifiDetail)
+                navLink(for: .history)
+            }
         }
         .navigationTitle("Settings")
-        #if os(macOS)
+#if os(macOS)
         .listStyle(.sidebar)
-        #endif
+#endif
     }
     
     // Molekul 2: Logika Routing Konten
@@ -89,8 +103,12 @@ private extension SettingsView {
             switch panel {
             case .about:
                 AboutView()
+            case .support:
+                SupportMeView()
             case .host:
                 HostSettingsView()
+            case .wifiDetail:
+                WifiDetailView()
             case .history:
                 HistoryView()
             }
@@ -99,7 +117,7 @@ private extension SettingsView {
         }
     }
     
-    // Molekul 3: Helper untuk Row Sidebar (Biar gak repetitif)
+    // Molekul 3: Helper untuk Row Sidebar
     func navLink(for panel: SettingsPanel) -> some View {
         NavigationLink(value: panel) {
             Label(panel.rawValue, systemImage: panel.iconName)

@@ -5,98 +5,103 @@
 //  Created by Nunu Nugraha on 20/03/25.
 //
 
+
 import Foundation
 
 struct PingMessages {
     
-    // --- BAGIAN 1: LATENCY MESSAGES (KECEPATAN) ---
-    // Fokus: "Seberapa Cepat?" (Durasi kirim-terima)
+    // ==========================================
+    // MARK: - LATENCY MESSAGES (SPEED & FEEL)
+    // ==========================================
+    // String(localized: "...") otomatis masuk ke String Catalog.
+    // Default Text = English.
+    
     static let messages: [String: [String]] = [
         "elite" : [
-            "⚡️ Gila! Ini sih bukan internet, ini kilat!",
-            "🚄 Wusss! Download file berasa mindahin folder lokal.",
-            "🔥 Ping segini sih curang, musuh belum gerak udah mati duluan.",
-            "💎 Definisi internet sultan. Nikmatin selagi bisa!",
-            "🚀 Siap terbang ke bulan? Koneksi tanpa rem!"
+            String(localized: "⚡️ Insane! This isn't internet, it's lightning!"),
+            String(localized: "🚄 Whoosh! Downloading feels like moving local files."),
+            String(localized: "🔥 Cheating-level ping. Enemies die before they even move."),
+            String(localized: "💎 God-tier internet. Enjoy it while it lasts!"),
+            String(localized: "🚀 Ready to moon? Connection with no brakes!")
         ],
         "good" : [
-            "✨ Mulus banget, kayak jalan tol baru diaspal.",
-            "🌊 Lancar jaya, streaming 1080p tanpa mikir.",
-            "👌 Asik nih buat kerja sambil dengerin Spotify.",
-            "🎮 Gas main game, aman sentosa damai sejahtera.",
-            "✅ Nggak ada komplain, internet sebagaimana mestinya."
+            String(localized: "✨ Smooth as silk, like a freshly paved highway."),
+            String(localized: "🌊 Smooth sailing. Streaming 4K without a thought."),
+            String(localized: "👌 Perfect for working while jamming to Spotify."),
+            String(localized: "🎮 Game on! Safe, sound, and lag-free."),
+            String(localized: "✅ No complaints. Internet doing exactly what it should.")
         ],
         "good enough" : [
-            "😐 Lumayan lah, daripada pake kuota hp.",
-            "☕️ Bisa buat kerja santai, asal jangan download file gede barengan.",
-            "🆗 Masih oke buat YouTube, tapi jangan maksa 4K ya.",
-            "🤸‍♀️ Not bad, not great. Yang penting connect.",
-            "🤏 Sedikit delay tapi masih bisa dimaafkan."
+            String(localized: "😐 Not bad. Better than mobile data hotspot."),
+            String(localized: "☕️ Good for casual work, just don't download big files."),
+            String(localized: "🆗 YouTube is fine, just don't push for 4K."),
+            String(localized: "🤸‍♀️ Not great, not terrible. At least we're connected."),
+            String(localized: "🤏 A tiny delay, but still forgivable.")
         ],
         "enough" : [
-            "🐢 Sabar... orang sabar disayang Tuhan.",
-            "🐌 Agak berat tarikannya, kayak motor telat ganti oli.",
-            "📦 Loading-nya kerasa, mending ambil kopi dulu.",
-            "🤔 Hmm, lagi rame ya yang pake WiFi?",
-            "📉 Turunin resolusi video biar nggak muter-muter."
+            String(localized: "🐢 Patience... good things come to those who wait."),
+            String(localized: "🐌 A bit sluggish, like a car overdue for an oil change."),
+            String(localized: "📦 Feeling the load times? Go grab a coffee."),
+            String(localized: "🤔 Hmm, is everyone on the WiFi right now?"),
+            String(localized: "📉 Lower the video resolution to stop the buffering.")
         ],
         "slow" : [
-            "🛑 Duh, berat banget. Buka Google aja mikir.",
-            "😫 Mending baca buku daripada nungguin loading.",
-            "🕸️ Ini internet apa jaring laba-laba? Nyangkut mulu.",
-            "🕰️ Berasa balik ke jaman warnet 2008.",
-            "💤 Zzz... keburu tua nungguin ini."
+            String(localized: "🛑 Ouch, so heavy. Even Google is thinking twice."),
+            String(localized: "😫 Better read a book than wait for this loading."),
+            String(localized: "🕸️ Is this the web or a spiderweb? Getting stuck everywhere."),
+            String(localized: "🕰️ Feels like 2008 dial-up all over again."),
+            String(localized: "💤 Zzz... I'll grow old waiting for this.")
         ],
         "unplayable" : [
-            "💀 RIP Internet. Mending tidur.",
-            "⛔️ Jangan dipaksa, nanti darah tinggi.",
-            "🧱 Ini tembok, bukan internet. Nggak nembus.",
-            "🆘 Tolong, butuh bantuan sinyal darurat!",
-            "📵 Putus nyambung kayak hubungan toxic."
+            String(localized: "💀 RIP Internet. Just go to sleep."),
+            String(localized: "⛔️ Don't force it, you'll get high blood pressure."),
+            String(localized: "🧱 This is a brick wall, not internet. Nothing's passing."),
+            String(localized: "🆘 SOS! Send emergency signal help!"),
+            String(localized: "📵 On and off like a toxic relationship.")
         ],
         "no connection" : [
-            "👻 Hampa... tidak ada tanda-tanda kehidupan sinyal.",
-            "🔌 Kabelnya colok dulu bos!",
-            "❌ Disconnect. Coba restart modem, siapa tau hoki."
+            String(localized: "👻 Empty... no signs of signal life here."),
+            String(localized: "🔌 Plug in the cable first, boss!"),
+            String(localized: "❌ Disconnected. Try restarting the modem, might get lucky.")
         ],
         "calculating": [
-            "🔎 Sedang menerawang nasib sinyalmu...",
-            "⏳ Sabar, lagi ngitung...",
-            "📡 Ping... Pong... Menunggu balasan..."
+            String(localized: "🔎 Divining your signal's fortune..."),
+            String(localized: "⏳ Hold on, doing the math..."),
+            String(localized: "📡 Ping... Pong... Waiting for reply...")
         ],
         "unknown": [
-            "😵 Status tidak dikenali.",
-            "❓ Data aneh terdeteksi."
+            String(localized: "😵 Status unrecognized."),
+            String(localized: "❓ Anomalous data detected.")
         ]
     ]
     
-    // --- BAGIAN 2: QUALITY RECOMMENDATIONS (KESTABILAN) ---
-    // Fokus: "Seberapa Konsisten?" (Jitter, Loss, Gangguan)
-    // Copywriting ini fokus pada GEJALA ketidakstabilan (Robot, Teleport, Buffer)
+    // ==========================================
+    // MARK: - RECOMMENDATIONS (QUALITY CONTEXT)
+    // ==========================================
+    
     static let recommendations: [String: String] = [
-        "perfect": "💎 KONEKSI ROCK-SOLID. Sinyal stabil tanpa 'detak jantung' tambahan. Wajib hukumnya untuk Turnamen E-Sport atau Trading Frekuensi Tinggi.",
+        "perfect": String(localized: "💎 ROCK-SOLID CONNECTION. Stable signal with no extra 'heartbeats'. Mandatory for E-Sports Tournaments or High-Frequency Trading."),
         
-        "stable": "✅ SANGAT KONSISTEN. Variasi sinyal minim. Sangat aman untuk Meeting Penting (Zoom) agar suara jernih, atau Streaming film tanpa buffering.",
+        "stable": String(localized: "✅ VERY CONSISTENT. Minimal signal variation. Safe for important meetings (Zoom) for clear audio, or streaming movies without buffering."),
         
-        "unstable": "⚠️ SINYAL 'GOYANG' (Jitter Tinggi). Kecepatan mungkin oke, tapi tidak konsisten. Efek: Game Online akan terasa 'teleport' (rubber-banding) dan suara Call jadi robot.",
+        "unstable": String(localized: "⚠️ WOBBLY SIGNAL (High Jitter). Speed might be okay, but inconsistent. Effect: Online games will feel like 'teleporting' (rubber-banding) and calls will sound robotic."),
         
-        "laggy": "🐢 RESPON LAMBAT. Ada jeda signifikan antara klik dan respon server. Hindari aktivitas real-time (Game/Call). Cocok hanya untuk browsing teks atau download ditinggal tidur.",
+        "laggy": String(localized: "🐢 SLOW RESPONSE. Significant delay between click and server response. Avoid real-time activities (Games/Calls). Good only for browsing text or downloading while sleeping."),
         
-        "critical": "⛔ GANGGUAN BERAT. Sinyal sangat fluktuatif. Video call pasti freeze, game pasti disconnect. Coba restart modem atau pindah posisi duduk.",
+        "critical": String(localized: "⛔ SEVERE DISRUPTION. Signal is fluctuating wildly. Video calls will freeze, games will disconnect. Try restarting the modem or moving closer."),
         
-        "packet_loss": "💔 KEBOCORAN DATA (Packet Loss). Sebagian data hilang di tengah jalan. Ini musuh utama Gamer & Streamer. Game akan patah-patah kasar, file upload bisa corrupt.",
+        "packet_loss": String(localized: "💔 DATA LEAK (Packet Loss). Parts of data are lost in transit. The main enemy of Gamers & Streamers. Games will stutter badly, uploads may corrupt."),
         
-        "offline": "🔌 TERPUTUS TOTAL. Tidak ada sambungan internet sama sekali. Cek kabel LAN atau pastikan WiFi sudah terhubung dengan benar."
+        "offline": String(localized: "🔌 TOTAL DISCONNECTION. No internet connection at all. Check LAN cable or ensure WiFi is connected properly.")
     ]
     
-    // Fungsi ambil pesan Latency (Random)
+    // Helpers
     static func getRandomMessage(for category: String) -> String {
         let availableMessages = messages[category] ?? messages["unknown"]!
-        return availableMessages.randomElement() ?? "Status koneksi..."
+        return availableMessages.randomElement() ?? String(localized: "Status koneksi...")
     }
     
-    // Fungsi ambil rekomendasi Quality (Static/Fixed)
     static func getRecommendation(for conditionKey: String) -> String {
-        return recommendations[conditionKey] ?? "Menganalisa jaringan..."
+        return recommendations[conditionKey] ?? String(localized: "Menganalisa jaringan...")
     }
 }

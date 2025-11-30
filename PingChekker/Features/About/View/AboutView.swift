@@ -4,19 +4,18 @@
 //
 //  Created by Nunu Nugraha on 29/11/25.
 //
-
 import SwiftUI
 
 struct AboutView: View {
     var body: some View {
         VStack(spacing: 16) {
-            // Icon App (Gue pake SF Symbol biar aman)
+            // Icon App
             Image(systemName: "waveform.path.ecg.rectangle")
                 .resizable()
                 .aspectRatio(contentMode: .fit)
                 .frame(width: 64, height: 64)
                 .foregroundColor(.blue)
-                .symbolEffect(.pulse, isActive: true) // Animasi dikit biar gak kaku
+                .symbolEffect(.pulse, isActive: true)
             
             VStack(spacing: 4) {
                 Text("PingChekker")
@@ -33,7 +32,8 @@ struct AboutView: View {
                 .padding(.vertical, 8)
                 .frame(width: 200)
             
-            Text("Dibuat karena frustrasi dengan internet yang labil.\nMonitoring latensi & jitter tanpa ampun.")
+            // UPDATE COPYWRITING DI SINI (ENGLISH KEY)
+            Text("Created out of frustration with unstable internet.\nRuthless latency & jitter monitoring.")
                 .font(.system(size: 11))
                 .multilineTextAlignment(.center)
                 .foregroundColor(.secondary)

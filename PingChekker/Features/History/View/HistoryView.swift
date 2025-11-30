@@ -25,13 +25,12 @@ struct HistoryView: View {
                 List {
                     ForEach(historyItems) { item in
                         historyRow(for: item)
-                        // 🔥 GANTI SWIPE JADI CONTEXT MENU (KLIK KANAN)
-                        // Ini lebih reliable di macOS
+                            // Context Menu (Klik Kanan)
                             .contextMenu {
                                 Button(role: .destructive) {
                                     viewModel.requestDelete(item: item)
                                 } label: {
-                                    Label("Hapus Riwayat Ini", systemImage: "trash")
+                                    Label("Delete This History", systemImage: "trash")
                                 }
                             }
                     }
@@ -40,13 +39,14 @@ struct HistoryView: View {
                 
                 // Footer
                 HStack {
+                    // Pakai String Interpolation buat angka
                     Text("\(historyItems.count) records")
                         .font(.caption).foregroundStyle(.secondary)
+                    
                     Spacer()
                     
-                    // 🔥 TOMBOL CLEAR ALL YANG BENAR
                     Button("Clear All", role: .destructive) {
-                        viewModel.requestClearAll() // Panggil Request, JANGAN deleteAll langsung!
+                        viewModel.requestClearAll()
                     }
                     .font(.caption).buttonStyle(.bordered)
                 }
@@ -55,30 +55,30 @@ struct HistoryView: View {
         }
         .navigationTitle("Network History")
         
-        // --- ALERT 1: LAGI JALAN ---
-        .alert("Monitoring Sedang Aktif", isPresented: $viewModel.showRunningAlert) {
-            Button("Oke", role: .cancel) { }
+        // --- ALERT 1: MONITORING ACTIVE ---
+        .alert("Monitoring Active", isPresented: $viewModel.showRunningAlert) {
+            Button("OK", role: .cancel) { }
         } message: {
-            Text("Stop dulu monitoringnya kalau mau hapus data. Biar gak crash.")
+            Text("Please stop monitoring first before deleting history data.")
         }
         
-        // --- ALERT 2: DELETE SATU ITEM ---
-        .alert("Hapus Item Ini?", isPresented: $viewModel.showDeleteConfirmation) {
-            Button("Batal", role: .cancel) { }
-            Button("Hapus", role: .destructive) { viewModel.confirmDelete() }
+        // --- ALERT 2: DELETE ONE ---
+        .alert("Delete This Item?", isPresented: $viewModel.showDeleteConfirmation) {
+            Button("Cancel", role: .cancel) { }
+            Button("Delete", role: .destructive) { viewModel.confirmDelete() }
         }
         
-        // --- ALERT 3: CLEAR ALL (NUKLIR) ---
-        .alert("Hapus SEMUA Riwayat?", isPresented: $viewModel.showClearAllConfirmation) {
-            Button("Batal", role: .cancel) { }
-            Button("Hapus Semua", role: .destructive) { viewModel.confirmClearAll() }
+        // --- ALERT 3: CLEAR ALL ---
+        .alert("Delete ALL History?", isPresented: $viewModel.showClearAllConfirmation) {
+            Button("Cancel", role: .cancel) { }
+            Button("Delete All", role: .destructive) { viewModel.confirmClearAll() }
         } message: {
-            Text("Tindakan ini akan menghapus seluruh database history. Tidak bisa di-undo.")
+            Text("This action will permanently delete all history logs. This cannot be undone.")
         }
     }
 }
 
-// MARK: - Subviews (Molekular)
+// MARK: - Subviews
 private extension HistoryView {
     
     var emptyState: some View {
@@ -87,11 +87,11 @@ private extension HistoryView {
                 .font(.system(size: 48))
                 .foregroundColor(.secondary.opacity(0.3))
             
-            Text("Riwayat Kosong")
+            Text("No History")
                 .font(.headline)
                 .foregroundColor(.secondary)
             
-            Text("Data akan muncul setelah sesi berakhir\natau saat lo ganti jaringan.")
+            Text("Data will appear here after you finish a session\nor switch networks.")
                 .font(.caption)
                 .foregroundColor(.secondary.opacity(0.7))
                 .multilineTextAlignment(.center)
@@ -100,14 +100,12 @@ private extension HistoryView {
     }
     
     func historyRow(for item: NetworkHistory) -> some View {
-        // Ambil hasil evaluasi MOS dari ViewModel
         let evaluation = viewModel.evaluateQuality(mos: item.mos)
         
         return HStack(alignment: .center, spacing: 12) {
             
-            // KOLOM KIRI: Info Jaringan
+            // Info Jaringan
             VStack(alignment: .leading, spacing: 4) {
-                // Nama WiFi (Utama)
                 HStack {
                     Image(systemName: "wifi")
                         .font(.caption)
@@ -116,12 +114,10 @@ private extension HistoryView {
                         .font(.system(size: 14, weight: .semibold))
                 }
                 
-                // Host Target
                 Text("Target: \(item.host ?? "-")")
                     .font(.caption2)
                     .foregroundStyle(.secondary)
                 
-                // Tanggal (Format Request Lo)
                 Text(viewModel.getFormattedDate(item.timestamp))
                     .font(.system(size: 10, design: .monospaced))
                     .foregroundStyle(.tertiary)
@@ -130,10 +126,8 @@ private extension HistoryView {
             
             Spacer()
             
-            // KOLOM KANAN: Statistik (Latency & MOS)
+            // Statistik
             HStack(spacing: 12) {
-                
-                // Latency (Angka Besar)
                 VStack(alignment: .trailing, spacing: 0) {
                     Text("\(Int(item.latency))")
                         .font(.system(size: 20, weight: .bold, design: .rounded))
@@ -142,12 +136,11 @@ private extension HistoryView {
                         .foregroundStyle(.secondary)
                 }
                 
-                // Divider Kecil
                 Rectangle()
                     .fill(Color.secondary.opacity(0.2))
                     .frame(width: 1, height: 25)
                 
-                // MOS Badge (Warna-warni)
+                // Badge MOS (Teks status sudah dilocalize di ViewModel)
                 VStack(alignment: .center, spacing: 2) {
                     Image(systemName: evaluation.icon)
                         .font(.system(size: 14))
@@ -162,7 +155,7 @@ private extension HistoryView {
                         .textCase(.uppercase)
                         .foregroundColor(evaluation.color.opacity(0.8))
                 }
-                .frame(width: 50) // Fix width biar rapi
+                .frame(width: 50)
             }
         }
         .padding(.vertical, 4)

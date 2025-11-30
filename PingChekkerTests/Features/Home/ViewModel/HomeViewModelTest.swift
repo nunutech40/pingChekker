@@ -43,18 +43,18 @@ import XCTest
 //    Kita bisa memaksa RTO, memaksa Ping Bagus, tanpa nungguin WiFi lemot beneran.
 // ==========================================================================================
 
+import XCTest
+@testable import PingChekker
+
 @MainActor
-class HomeViewModelTest: XCTestCase {
+class HomeViewModelTests: XCTestCase {
     
     var viewModel: HomeViewModel!
     var mockService: MockPingService!
     
     override func setUp() {
         super.setUp()
-        // 1. Siapkan service palsu
         mockService = MockPingService()
-        
-        // Inject ke ViewModel
         viewModel = HomeViewModel(service: mockService)
     }
     
@@ -65,93 +65,93 @@ class HomeViewModelTest: XCTestCase {
     }
     
     // ==========================================
-    // FASE 1: TEST INITIAL STATE (Keadaan Lahir)
+    // FASE 1: TEST INITIAL STATE
     // ==========================================
     func test_InitialState_IsCorrect() {
-        // Pas baru lahir, pastikan UI bersih dan status default benar
+        // Update String Key: "CALCULATING" (bukan "calculating")
         XCTAssertEqual(viewModel.currentLatency, 0.0)
         XCTAssertEqual(viewModel.latencyText, "- ms")
-        XCTAssertEqual(viewModel.categoryText, "calculating")
+        XCTAssertEqual(viewModel.categoryText, "CALCULATING")
         XCTAssertEqual(viewModel.statusColor, .gray)
         XCTAssertFalse(viewModel.isOffline)
         
-        // Pastikan ViewModel langsung nyuruh service kerja pas lahir
         XCTAssertTrue(mockService.isMonitoringStarted)
     }
     
     // ==========================================
-    // FASE 2: TEST STATE TRANSFORMATION (Logika UI)
+    // FASE 2: TEST STATE TRANSFORMATION
     // ==========================================
-    // Di sini kita cek apakah "Otak" ViewModel menerjemahkan angka menjadi warna/teks dengan benar.
+    
     func test_Ping_Elite_Green() {
-        // Given: Input 10ms
         mockService.simulatePing(latency: 10.0)
         
-        // Then: Output harus Hijau & Elite
         waitAndAssertUI {
-            XCTAssertEqual(self.viewModel.categoryText, "elite")
+            // Update String Key: "ELITE"
+            XCTAssertEqual(self.viewModel.categoryText, "ELITE")
             XCTAssertEqual(self.viewModel.statusColor, .green)
         }
     }
     
     func test_Ping_Good_GreenOpacity() {
-        mockService.simulatePing(latency: 30.0) // Range 21-50
+        mockService.simulatePing(latency: 30.0)
         
         waitAndAssertUI {
-            XCTAssertEqual(self.viewModel.categoryText, "good")
-            // Tips: Kalau warna susah di-compare (karena Opacity), cukup cek teks kategorinya.
-            // Asumsi: Kalau kategori bener, warnanya pasti ngikut logic switch-case yang sama.
+            // Update String Key: "GOOD"
+            XCTAssertEqual(self.viewModel.categoryText, "GOOD")
         }
     }
     
     func test_Ping_GoodEnough_Yellow() {
-        mockService.simulatePing(latency: 70.0) // Range 51-100
+        mockService.simulatePing(latency: 70.0)
+        
         waitAndAssertUI {
-            XCTAssertEqual(self.viewModel.categoryText, "good enough")
+            // Update String Key: "GOOD ENOUGH"
+            XCTAssertEqual(self.viewModel.categoryText, "GOOD ENOUGH")
             XCTAssertEqual(self.viewModel.statusColor, .yellow)
         }
     }
     
     func test_Ping_Enough_Orange() {
-        mockService.simulatePing(latency: 150.0) // Range 101-200
+        mockService.simulatePing(latency: 150.0)
         
         waitAndAssertUI {
-            XCTAssertEqual(self.viewModel.categoryText, "enough")
+            // Update String Key: "ENOUGH"
+            XCTAssertEqual(self.viewModel.categoryText, "ENOUGH")
             XCTAssertEqual(self.viewModel.statusColor, .orange)
         }
     }
     
     func test_Ping_Slow_Red() {
-        mockService.simulatePing(latency: 300.0) // Range 201-500
+        mockService.simulatePing(latency: 300.0)
         
         waitAndAssertUI {
-            XCTAssertEqual(self.viewModel.categoryText, "slow")
+            // Update String Key: "SLOW"
+            XCTAssertEqual(self.viewModel.categoryText, "SLOW")
             XCTAssertEqual(self.viewModel.statusColor, .red)
         }
     }
     
+    // ==========================================
+    // FASE 3: TEST QUALITY LOGIC
+    // ==========================================
     
-    // ==========================================
-    // FASE 3: TEST QUALITY LOGIC (MOS Copywriting)
-    // ==========================================
     func test_HighMOS_ShowsPerfectRecommendation() {
-        // Simulasi MOS 4.5 (Angka dari Service)
         mockService.simulatePing(latency: 10, mos: 4.5)
         
         waitAndAssertUI {
             XCTAssertEqual(self.viewModel.mosScore, "4.5")
-            // Cek apakah teks rekomendasi mengandung kata kunci yang benar
-            XCTAssertTrue(self.viewModel.qualityCondition.contains("Excellent"))
+            // Update String Key: "EXCELLENT"
+            XCTAssertTrue(self.viewModel.qualityCondition.contains("EXCELLENT"))
         }
     }
     
     func test_LowMOS_ShowsCriticalRecommendation() {
-        // Simulasi MOS 1.5
         mockService.simulatePing(latency: 500, mos: 1.5)
         
         waitAndAssertUI {
             XCTAssertEqual(self.viewModel.mosScore, "1.5")
-            XCTAssertTrue(self.viewModel.qualityCondition.contains("Critical"))
+            // Update String Key: "CRITICAL"
+            XCTAssertTrue(self.viewModel.qualityCondition.contains("CRITICAL"))
             XCTAssertEqual(self.viewModel.qualityColor, .red)
         }
     }
@@ -161,33 +161,34 @@ class HomeViewModelTest: XCTestCase {
     // ==========================================
     
     func test_RTO_TriggersOffline() {
-        // When: Service teriak RTO
         mockService.simulateError(msg: "RTO")
         
-        // Then: UI harus masuk mode Offline
         waitAndAssertUI {
             XCTAssertTrue(self.viewModel.isOffline)
             XCTAssertEqual(self.viewModel.latencyText, "RTO")
+            // Update String Key: "OFFLINE"
             XCTAssertEqual(self.viewModel.qualityCondition, "OFFLINE")
+            // Tambahan Cek Category: "NO CONNECTION"
+            XCTAssertEqual(self.viewModel.categoryText, "NO CONNECTION")
         }
     }
     
     func test_ResumeSignal_ResetsUI() {
-        // 1. Kondisikan Error dulu biar status jadi Offline
+        // 1. Bikin error dulu
         mockService.simulateError(msg: "RTO")
         
-        // Tunggu bentar biar state ke-set (Simulasi delay UI)
         let rtoExpectation = XCTestExpectation(description: "RTO Set")
         DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) { rtoExpectation.fulfill() }
         wait(for: [rtoExpectation], timeout: 1.0)
         
-        // 2. Action: Kirim sinyal Resume (Simulation Notification dari Settings)
+        // 2. Kirim sinyal Resume
         NotificationCenter.default.post(name: .startPingSession, object: nil)
         
-        // 3. Then: Cek apakah UI balik bersih (Online) dan Reset
+        // 3. Cek Reset
         waitAndAssertUI {
-            XCTAssertFalse(self.viewModel.isOffline, "Harusnya status Offline dicabut")
-            XCTAssertEqual(self.viewModel.statusMessage, "Menghubungkan kembali...")
+            XCTAssertFalse(self.viewModel.isOffline)
+            // Update String Key: "Reconnecting..." (bukan Menghubungkan kembali)
+            XCTAssertEqual(self.viewModel.statusMessage, "Reconnecting...")
             XCTAssertEqual(self.viewModel.currentLatency, 0.0)
         }
     }
@@ -197,46 +198,40 @@ class HomeViewModelTest: XCTestCase {
     // ==========================================
     
     func test_ForceStop_StopsServiceAndUpdatesUI() {
-        // 1. Given: Kondisi lagi jalan normal
+        // 1. Given: Kondisi jalan normal
         mockService.simulatePing(latency: 20)
         
-        // 🔥 FIX RACE CONDITION:
-        // Tunggu dulu sampai UI beneran jadi "Elite" (Hijau) sebelum kita stop.
+        // Warm Up: Tunggu UI jadi ELITE
         let warmUpExpectation = XCTestExpectation(description: "Warm Up UI")
         DispatchQueue.main.async {
-            // Kita cek apakah update pertama (Ping 20ms) udah diproses
-            if self.viewModel.categoryText == "elite" {
+            // Update String Key: "ELITE"
+            if self.viewModel.categoryText == "ELITE" {
                 warmUpExpectation.fulfill()
             }
         }
         wait(for: [warmUpExpectation], timeout: 1.0)
         
         
-        // 2. When: User maksa stop (misal mau quit)
+        // 2. When: Force Stop
         viewModel.forceStopSession()
         
         // 3. Then:
+        // Cek Service Mati
+        XCTAssertTrue(mockService.isMonitoringStopped)
+        
         // Cek UI Offline
-        // (Karena forceStopSession itu update direct/synchronous di VM, kita bisa assert langsung atau pake helper)
-        
-        // Cek Mesin Ping Mati
-        XCTAssertTrue(mockService.isMonitoringStopped, "Service harusnya dipanggil stopMonitoring()")
-        
         XCTAssertTrue(self.viewModel.isOffline)
-        XCTAssertEqual(self.viewModel.statusMessage, "Terputus")
+        // Update String Key: "Disconnected" (bukan Terputus)
+        XCTAssertEqual(self.viewModel.statusMessage, "Disconnected")
     }
     
-    // --- HELPER SAKTI ---
-    // Karena ViewModel main di Main Thread (Async), kita butuh helper ini
-    // buat nunggu update UI kelar sebelum kita Assert (Cek nilai).
+    // --- HELPER ---
     private func waitAndAssertUI(timeout: TimeInterval = 1.0, assertions: @escaping () -> Void) {
         let expectation = XCTestExpectation(description: "UI Update")
-        
         DispatchQueue.main.async {
             assertions()
             expectation.fulfill()
         }
-        
         wait(for: [expectation], timeout: timeout)
     }
 }
