@@ -15,6 +15,13 @@ class HistoryViewModel: ObservableObject {
     @Published var showDeleteConfirmation: Bool = false
     @Published var showClearAllConfirmation: Bool = false
     
+    private let service: HistoryService
+    
+    // Default-nya tetep .shared biar UI asli gak error
+    init(service: HistoryService = .shared) {
+        self.service = service
+    }
+    
     // Nampung korban yang mau dieksekusi
     var itemToDelete: NetworkHistory?
     
@@ -42,14 +49,14 @@ class HistoryViewModel: ObservableObject {
         // (Sebenernya gak wajib delay karena NotificationCenter itu synchronous by default, tapi aman)
         
         // 2. BARU HAPUS DATA
-        HistoryService.shared.deleteAll()
+        service.deleteAll()
         
         print("✅ Command sent & DB Cleared.")
     }
     
     // Logic Hapus Item
     func deleteItem(_ item: NetworkHistory) {
-        HistoryService.shared.deleteItem(item)
+        service.deleteItem(item)
     }
     
     // --- LOGIC MOS TRANSLATOR (Dari HomeViewModel) ---
@@ -78,7 +85,7 @@ class HistoryViewModel: ObservableObject {
     // Fungsi Pemicu (Dipanggil View)
     func requestDelete(item: NetworkHistory) {
         // Cek dulu: Lagi monitoring gak?
-        if HistoryService.shared.isMonitoring {
+        if service.isMonitoring {
             // Kalau IYA: Tampilkan Alert "Stop Dulu"
             showRunningAlert = true
         } else {
@@ -91,14 +98,14 @@ class HistoryViewModel: ObservableObject {
     // Fungsi Eksekutor (Dipanggil kalau User udah Yakin)
     func confirmDelete() {
         if let item = itemToDelete {
-            HistoryService.shared.deleteItem(item)
+            service.deleteItem(item)
             itemToDelete = nil // Reset
         }
     }
     
     func requestClearAll() {
         // Cek lagi monitoring gak?
-        if HistoryService.shared.isMonitoring {
+        if service.isMonitoring {
             showRunningAlert = true
         } else {
             // Tampilkan alert konfirmasi "Clear All"
@@ -109,7 +116,7 @@ class HistoryViewModel: ObservableObject {
     // --- LOGIC CLEAR ALL (CLEAN) ---
     func confirmClearAll() {
         // Hapus Data (Sekarang UI bakal langsung update karena fix di Service)
-        HistoryService.shared.deleteAll()
+        service.deleteAll()
         
         // Kirim sinyal reset logic ke HomeViewModel (biar activeSessionID jadi nil)
         NotificationCenter.default.post(name: .resetPingSession, object: nil)
