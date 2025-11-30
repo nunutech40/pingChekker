@@ -45,11 +45,12 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSWindowDelegate {
         if hasConfirmedQuit { return true }
         
         let alert = NSAlert()
-        alert.messageText = "Hentikan Monitoring?"
-        alert.informativeText = "Sesi ping akan disimpan ke history sebelum aplikasi ditutup."
+        // GANTI JADI ENGLISH KEYS
+        alert.messageText = "Stop Monitoring?"
+        alert.informativeText = "The ping session will be saved to history before the application closes."
         alert.alertStyle = .warning
-        alert.addButton(withTitle: "Simpan & Keluar")
-        alert.addButton(withTitle: "Batal")
+        alert.addButton(withTitle: "Save & Quit")
+        alert.addButton(withTitle: "Cancel")
         
         // Supaya alert muncul sheet di window (lebih native)
         // Kalau nil, dia bakal muncul modal di tengah layar

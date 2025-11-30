@@ -800,7 +800,14 @@
       }
     },
     "Latency: %@" : {
-
+      "localizations" : {
+        "id" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Latensi: %@"
+          }
+        }
+      }
     },
     "Local IP" : {
 
@@ -929,7 +936,14 @@
       }
     },
     "Open Dashboard" : {
-
+      "localizations" : {
+        "id" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Buka Dashboard"
+          }
+        }
+      }
     },
     "Open Settings (Cmd+,)" : {
       "localizations" : {
@@ -986,10 +1000,24 @@
       }
     },
     "Quality Score: %@ / 5.0" : {
-
+      "localizations" : {
+        "id" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Skor Kualitas: %@ / 5.0"
+          }
+        }
+      }
     },
     "Quit" : {
-
+      "localizations" : {
+        "id" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Keluar"
+          }
+        }
+      }
     },
     "REALTIME LATENCY" : {
       "localizations" : {
@@ -1039,6 +1067,17 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Lanjut Monitoring"
+          }
+        }
+      }
+    },
+    "Save & Quit" : {
+      "extractionState" : "stale",
+      "localizations" : {
+        "id" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Simpan & Keluar"
           }
         }
       }
@@ -1132,7 +1171,26 @@
       }
     },
     "Status: %@" : {
-
+      "extractionState" : "stale",
+      "localizations" : {
+        "id" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Status: %@"
+          }
+        }
+      }
+    },
+    "Stop Monitoring?" : {
+      "extractionState" : "stale",
+      "localizations" : {
+        "id" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Hentikan Monitoring?"
+          }
+        }
+      }
     },
     "Support Us" : {
       "extractionState" : "stale",
@@ -1164,6 +1222,17 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Terima kasih sudah menjadi orang baik! ❤️"
+          }
+        }
+      }
+    },
+    "The ping session will be saved to history before the application closes." : {
+      "extractionState" : "stale",
+      "localizations" : {
+        "id" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Sesi ping akan disimpan ke riwayat sebelum aplikasi ditutup."
           }
         }
       }

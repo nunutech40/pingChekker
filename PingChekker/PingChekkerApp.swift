@@ -4,6 +4,7 @@
 //
 //  Created by Nunu Nugraha on 16/03/25.
 //
+
 import SwiftUI
 
 @main
@@ -13,61 +14,56 @@ struct PingCheckerApp: App {
     @NSApplicationDelegateAdaptor(AppDelegate.self) var appDelegate
     
     @StateObject private var viewModel = HomeViewModel()
-    
-    // Inisialisasi persistance controller -> LocalDB -> CoreData
     let persistanceController = PresistanceController.shared
-
+    
     var body: some Scene {
         
-        // --- WINDOW UTAMA (Dashboard) ---
+        // --- WINDOW UTAMA ---
         WindowGroup(id: "dashboard") {
             ContentView(viewModel: viewModel)
-                // KONSISTENSI UKURAN:
-                // Samain sama desain HomeView lo (480x220). Jangan 300, jadi melar kosong bawahnya.
                 .frame(width: 480, height: 220)
                 .fixedSize()
-                
-            // Suntik local db yg udah di init di atas ke app
+            // Suntik local db
                 .environment(\.managedObjectContext, persistanceController.container.viewContext)
+            // CCTV Window Accessor
                 .background(WindowAccessor { window in
                     if let window = window {
-                        // Pasang Satpam (Delegate) ke Window ini
                         window.delegate = appDelegate
-                        
-                        // Kenalin ViewModel ke AppDelegate (buat save)
                         appDelegate.homeViewModel = viewModel
-                        
                         print("✅ Window Delegate Attached Successfully!")
                     }
                 })
-                #if os(macOS)
+#if os(macOS)
                 .background(VisualEffect().ignoresSafeArea())
-                #endif
+#endif
         }
-        #if os(macOS)
+#if os(macOS)
         .windowResizability(.contentSize)
         .windowStyle(.hiddenTitleBar)
-        .commands {
-            SidebarCommands()
-        }
-        #endif
-
-        // --- MENU BAR ICON (Tetap) ---
-        #if os(macOS)
+        .commands { SidebarCommands() }
+#endif
+        
+        // --- MENU BAR ICON ---
+#if os(macOS)
         MenuBarExtra {
-            Text("Status: \(viewModel.categoryText.uppercased())")
+            // Gunakan LocalizedStringKey untuk teks dinamis
+            // viewModel.categoryText isinya KEY (misal "ELITE"), jadi harus dibungkus LocalizedStringKey biar diterjemahin
+            Text("Status: \(LocalizedStringKey(viewModel.categoryText))")
                 .font(.headline)
             
+            // "Latency:" (Key)
             Text("Latency: \(viewModel.latencyText)")
+            
+            // "Quality Score:" (Key)
             Text("Quality Score: \(viewModel.mosScore) / 5.0")
             
             Divider()
             
-            Button("Open Dashboard") {
+            Button("Open Dashboard") { // Key: "Open Dashboard"
                 NSApp.activate(ignoringOtherApps: true)
             }
             
-            Button("Quit") {
+            Button("Quit") { // Key: "Quit"
                 NSApplication.shared.terminate(nil)
             }
             
@@ -75,21 +71,20 @@ struct PingCheckerApp: App {
             let iconName = getMenuBarIcon(status: viewModel.categoryText)
             Image(systemName: iconName)
         }
-        #endif
+#endif
         
-        // --- SETTINGS WINDOW (FIXED) ---
-        #if os(macOS)
+        // --- SETTINGS WINDOW ---
+#if os(macOS)
         Settings {
             SettingsView()
-                // HAPUS .frame(width: 350...) DI SINI!
-                // HAPUS .background(...) DI SINI!
-                // Biarkan SettingsView handle ukurannya sendiri dan pake style native.
                 .environment(\.managedObjectContext, persistanceController.container.viewContext)
         }
-        #endif
+#endif
     }
     
     func getMenuBarIcon(status: String) -> String {
+        // Status di sini adalah KEY ENGLISH UPPERCASE ("ELITE", "GOOD", dll)
+        // Jadi kita harus lowercased() biar match switch case
         switch status.lowercased() {
         case "elite": return "bolt.fill"
         case "good", "good enough", "stable", "perfect": return "wifi"
