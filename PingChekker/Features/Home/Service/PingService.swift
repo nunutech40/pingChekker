@@ -6,6 +6,7 @@
 //
 
 import Foundation
+import FirebaseCrashlytics
 
 // =================================================================================
 // MARK: - DOKUMENTASI PING SERVICE (MOS + JITTER STATS)
@@ -78,7 +79,9 @@ class PingService: NSObject, SimplePingDelegate, PingServiceProtocol {
     
     func updateHost(newHost: String) {
         guard newHost != hostName else { return }
-        print("🔁 Switching Host: \(hostName) -> \(newHost)")
+        
+        Crashlytics.crashlytics().log("User switched host target to \(newHost)")
+        
         hostName = newHost
         stopMonitoring()
         startMonitoring()
@@ -119,7 +122,6 @@ class PingService: NSObject, SimplePingDelegate, PingServiceProtocol {
     }
     
     private func startPinger() {
-        print("🚀 Starting Pinger to: \(hostName)")
         pinger = SimplePing(hostName: hostName)
         pinger?.delegate = self
         pinger?.start()
@@ -220,7 +222,6 @@ class PingService: NSObject, SimplePingDelegate, PingServiceProtocol {
     }
     
     func simplePing(_ pinger: SimplePing, didFailWithError error: any Error) {
-        print("Ping Error: \(error.localizedDescription)")
         onError?(error.localizedDescription)
         
         stopMonitoring()

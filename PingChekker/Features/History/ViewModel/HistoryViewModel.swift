@@ -83,8 +83,6 @@ class HistoryViewModel: ObservableObject {
         
         // 2. BARU HAPUS DATA
         service.deleteAll()
-        
-        print("✅ Command sent & DB Cleared.")
     }
     
     // Logic Hapus Item

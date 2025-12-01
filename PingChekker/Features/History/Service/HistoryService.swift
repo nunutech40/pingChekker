@@ -60,7 +60,6 @@ class HistoryService {
         context.performAndWait {
             let request: NSFetchRequest<NetworkHistory> = NetworkHistory.fetchRequest()
             
-            // 🔥 PERBAIKAN LOGIC DISINI 🔥
             // Jangan cuma cek Nama (SSID), tapi cek Fisik Router (BSSID).
             // Kalau Router-nya beda (Rumah vs Kantor), dia bakal dianggap BARU.
             request.predicate = NSPredicate(
@@ -69,7 +68,6 @@ class HistoryService {
                 netInfo.bssid,
                 netInfo.ssid
             )
-            print("cek request: \(request)")
             request.fetchLimit = 1
             
             do {
@@ -77,13 +75,11 @@ class HistoryService {
                 
                 if let existingLog = results.first {
                     // Router SAMA -> Lanjutkan Sesi (Resume)
-                    print("♻️ [HistoryService] Found existing session on router \(netInfo.bssid). Resuming...")
                     existingLog.timestamp = Date()
                     existingLog.status = "Monitoring..."
                     activeID = existingLog.id
                 } else {
                     // Router BEDA -> Bikin Baru
-                    print("✨ [HistoryService] New Router/Network Detected (\(netInfo.bssid)). Creating Row...")
                     let newLog = NetworkHistory(context: context)
                     activeID = UUID()
                     newLog.id = activeID
@@ -100,7 +96,7 @@ class HistoryService {
                     try context.save()
                 }
             } catch {
-                print("❌ [HistoryService] Init failed: \(error)")
+                print("[HistoryService] Init failed: \(error)")
             }
         }
         self.currentSessionID = activeID
@@ -121,7 +117,6 @@ class HistoryService {
                 log.status = status
                 
                 try? self.context.save()
-                print("🏁 Session Finalized.")
             }
         }
         
@@ -158,10 +153,8 @@ class HistoryService {
                 // Merge changes biar UI sadar
                 let changes = [NSDeletedObjectsKey: objectIDArray ?? []]
                 NSManagedObjectContext.mergeChanges(fromRemoteContextSave: changes, into: [self.context])
-                
-                print("🗑 All history cleared.")
             } catch {
-                print("❌ Delete failed: \(error)")
+                print("Delete failed: \(error)")
             }
         }
         

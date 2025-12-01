@@ -11,10 +11,10 @@ import FirebaseRemoteConfig
 
 class UpdateService: ObservableObject {
     
-    // 🔥 UBAH INI: Tidak lagi computed property, ini instance yang di-delay init-nya
+    // UBAH INI: Tidak lagi computed property, ini instance yang di-delay init-nya
     static let shared = UpdateService()
     
-    // 🔥 Buat private dan Optional/Lazy
+    // Buat private dan Optional/Lazy
     private var remoteConfig: RemoteConfig?
     
     // --- FORCE UPDATE / PAYWALL LOGIC ---
@@ -30,7 +30,7 @@ class UpdateService: ObservableObject {
         // Panggilan utama dilakukan di .onAppear App.swift, setelah setup
     }
     
-    // 🔥 FUNGSI INI DIPANGGIL OLEH APPDELEGATE SETELAH FIREBASE.CONFIGURE()
+    //FUNGSI INI DIPANGGIL OLEH APPDELEGATE SETELAH FIREBASE.CONFIGURE()
     func setupAndConfigure() {
         // Pastikan konfigurasi hanya terjadi sekali
         guard self.remoteConfig == nil else { return }
@@ -55,11 +55,8 @@ class UpdateService: ObservableObject {
     
     func checkForUpdates() {
         guard let rc = remoteConfig else {
-            print("⚠️ [UpdateService] Remote Config not configured yet.")
             return
         }
-        
-        print("🔥 [UpdateService] Fetching Firebase Config...")
         
         let fetchInterval: TimeInterval = 0 // 0 buat Debug
         
@@ -69,13 +66,11 @@ class UpdateService: ObservableObject {
         
         rc.fetch { [weak self] status, error in
             if status == .success {
-                print("✅ [UpdateService] Config fetched!")
                 rc.activate { changed, error in
                     self?.readFeatureFlags()
                     self?.checkVersionLogic()
                 }
             } else {
-                print("❌ [UpdateService] Error: \(error?.localizedDescription ?? "No error info")")
                 // Kalau gagal fetch, kita tetap jalankan logic dengan nilai default yang sudah di-setup.
                 self?.readFeatureFlags()
                 self?.checkVersionLogic()
@@ -90,7 +85,6 @@ class UpdateService: ObservableObject {
         DispatchQueue.main.async {
             self.showWifiDetails = rc["show_wifi_detail"].boolValue
             self.showSupportMenu = rc["show_support_menu"].boolValue
-            print(" [UpdateService] Features Loaded: Wifi=\(self.showWifiDetails), Support=\(self.showSupportMenu)")
         }
     }
     

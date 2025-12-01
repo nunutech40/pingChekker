@@ -39,7 +39,6 @@ struct PresistanceController {
                 try context.save()
             } catch {
                 let nserror = error as NSError
-                print("CoreData Save Error: \(nserror), \(nserror.userInfo)")
             }
         }
     }

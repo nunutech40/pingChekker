@@ -30,7 +30,6 @@ struct PingCheckerApp: App {
                     if let window = window {
                         window.delegate = appDelegate
                         appDelegate.homeViewModel = viewModel
-                        print("✅ Window Delegate Attached Successfully!")
                     }
                 })
                 .onAppear() {

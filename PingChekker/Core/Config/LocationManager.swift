@@ -27,12 +27,7 @@ class LocationManager: NSObject, ObservableObject, CLLocationManagerDelegate {
         let status = manager.authorizationStatus
         
         if status == .notDetermined {
-            print("📍 Requesting Location Permission...")
             manager.requestWhenInUseAuthorization()
-        } else if status == .denied || status == .restricted {
-            print("⚠️ Location Permission DENIED. BSSID will be hidden.")
-        } else {
-            print("✅ Location Permission already granted.")
         }
     }
     
@@ -40,7 +35,6 @@ class LocationManager: NSObject, ObservableObject, CLLocationManagerDelegate {
     func locationManagerDidChangeAuthorization(_ manager: CLLocationManager) {
         DispatchQueue.main.async {
             self.authorizationStatus = manager.authorizationStatus
-            print("📍 Authorization Status Changed: \(self.authorizationStatus.rawValue)")
         }
     }
 }

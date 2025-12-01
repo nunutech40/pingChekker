@@ -1,6 +1,9 @@
 {
   "sourceLanguage" : "en",
   "strings" : {
+    "%.0f ms" : {
+
+    },
     "%lld" : {
 
     },
@@ -1096,6 +1099,12 @@
       }
     },
     "Select an item" : {
+
+    },
+    "Session Avg: %.0f ms" : {
+
+    },
+    "Session Avg: 0 ms" : {
 
     },
     "Settings" : {

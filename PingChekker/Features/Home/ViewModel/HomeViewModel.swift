@@ -6,6 +6,7 @@
 
 import Foundation
 import SwiftUI
+import FirebaseCrashlytics
 
 class HomeViewModel: ObservableObject {
     
@@ -82,8 +83,6 @@ class HomeViewModel: ObservableObject {
     // MARK: - HANDLERS
     
     @objc private func handleStartSignal() {
-        print("▶️ RECEIVED START SIGNAL. RESUMING...")
-        
         // 1. UPDATE STATUS SERVICE
         HistoryService.shared.isMonitoring = true
         
@@ -105,7 +104,6 @@ class HomeViewModel: ObservableObject {
     }
     
     @objc private func handleResetSignal() {
-        print("☢️ RECEIVED RESET SIGNAL. NUKING SESSION...")
         
         // 1. JANGAN FINALIZE SESI INI.
         activeSessionID = nil
@@ -143,18 +141,22 @@ class HomeViewModel: ObservableObject {
         if isOffline { self.isOffline = false }
         self.lastGoodResult = result
         
-        // 🔥 LOGIC BARU: DETEKSI "SELINGKUH" JARINGAN (SEAMLESS ROAMING) 🔥
         // Kita cek BSSID saat ini. Kalau beda sama BSSID sesi aktif, berarti user pindah WiFi.
         let detectedBSSID = HistoryService.shared.getCurrentBSSID()
+        
+        // Ini membantu debugging jika aplikasi crash saat user sedang aktif
+        Crashlytics.crashlytics().setCustomValue(activeSessionID?.uuidString ?? "N/A", forKey: "Active_Session_ID")
+        Crashlytics.crashlytics().setCustomValue(detectedBSSID, forKey: "Current_BSSID")
         
         if let recordedBSSID = currentSessionBSSID,
            activeSessionID != nil,
            recordedBSSID != detectedBSSID {
             
-            print("🔀 Network Handover Detected! (\(recordedBSSID) -> \(detectedBSSID))")
-            
             // A. Finalize Sesi Lama (Save data terakhir di WiFi lama)
             if let sessionID = activeSessionID, let validData = lastGoodResult {
+                
+                Crashlytics.crashlytics().log("Handover detected, finalizing session \(sessionID.uuidString.prefix(8)).")
+                
                 HistoryService.shared.updateSession(
                     id: sessionID,
                     latency: validData.latencyMs,
@@ -171,7 +173,6 @@ class HomeViewModel: ObservableObject {
         
         // 3. LOGIC START SESSION (DRAFT)
         if activeSessionID == nil {
-            print("🔍 Checking DB for existing session...")
             checkAndRestoreHistory()
             
             // Initialize Session (Upsert Logic)
@@ -191,11 +192,17 @@ class HomeViewModel: ObservableObject {
     
     private func handleError(msg: String) {
         // --- LOGIC DISCONNECT / FINALIZE ---
+        let errorContext = "Host: \(SettingsStore.shared.targetHost), Status: RTO"
+        
+        // 🔥 CRASHLIGHTICS: Log Error (Breadcrumb)
+        Crashlytics.crashlytics().log("NETWORK ERROR: \(errorContext)")
+        
+        // 🔥 CRASHLIGHTICS: Set User Identifier (Opsional, tapi bagus)
+        Crashlytics.crashlytics().setUserID(UIDevice.current.identifierForVendor?.uuidString ?? "unknown_device")
         
         HistoryService.shared.isMonitoring = false
         
         if !isOffline {
-            print("⚠️ Disconnect Detected. Finalizing Session...")
             
             if let sessionID = activeSessionID, let validData = lastGoodResult {
                 HistoryService.shared.updateSession(
@@ -204,8 +211,6 @@ class HomeViewModel: ObservableObject {
                     mos: validData.sessionMOS > 0 ? validData.sessionMOS : validData.mosScore,
                     status: categoryText
                 )
-            } else {
-                print("⚠️ Warning: No active session to finalize.")
             }
             
             activeSessionID = nil
@@ -225,14 +230,11 @@ class HomeViewModel: ObservableObject {
         let currentNet = HistoryService.shared.getWiFiName()
         
         if let lastLog = HistoryService.shared.fetchLastLog(forHost: currentHost, networkName: currentNet) {
-            print("♻️ History Found! Restoring MOS: \(lastLog.mos)")
             
             DispatchQueue.main.async {
                 self.mosScore = String(format: "%.1f", lastLog.mos)
                 self.qualityCondition = lastLog.status ?? "UNKNOWN"
             }
-        } else {
-            print("🆕 No History. Starting fresh.")
         }
     }
     
@@ -249,7 +251,7 @@ class HomeViewModel: ObservableObject {
         qualityIcon = "wifi.slash"
         
         mosScore = "0.0"
-        sessionAvgText = "-"
+        sessionAvgText = String(localized: "Session Avg: 0 ms")
         
         isOffline = true
     }
@@ -260,7 +262,8 @@ class HomeViewModel: ObservableObject {
     
     private func updateRealtimeUI(latency: Double) {
         self.currentLatency = latency
-        self.latencyText = String(format: "%.0f ms", latency)
+
+        self.latencyText = String(format: String(localized: "%.0f ms"), latency)
         
         // GANTI JADI ENGLISH UPPERCASE KEYS (Biar match sama Localizable.xcstrings)
         switch latency {
@@ -285,12 +288,14 @@ class HomeViewModel: ObservableObject {
     }
     
     private func updateQualityUI(score: Double, sessionLatency: Double) {
-        // Format String manual
-        self.sessionAvgText = String(format: "Session Avg: %.0f ms", sessionLatency)
+        
+        // 🔥 FIX 2: INI YANG SALAH TADI. HARUS MENGGUNAKAN sessionLatency 🔥
+        self.sessionAvgText = String(format: String(localized: "Session Avg: %.0f ms"), sessionLatency)
+        
+        
         self.mosScore = String(format: "%.1f", score)
         
         if score == 0.0 {
-            // GANTI KEY ENGLISH
             qualityCondition = "MONITORING..."
             qualityColor = .blue
             qualityIcon = "hourglass"
@@ -300,33 +305,11 @@ class HomeViewModel: ObservableObject {
         
         var recommendationKey = "stable"
         
-        // GANTI KEY ENGLISH
-        if score >= 4.3 {
-            qualityCondition = "EXCELLENT"
-            qualityColor = .green
-            qualityIcon = "trophy.fill"
-            recommendationKey = "perfect"
-        } else if score >= 4.0 {
-            qualityCondition = "GOOD"
-            qualityColor = .green.opacity(0.8)
-            qualityIcon = "hand.thumbsup.fill"
-            recommendationKey = "stable"
-        } else if score >= 3.5 {
-            qualityCondition = "FAIR"
-            qualityColor = .yellow
-            qualityIcon = "exclamationmark.shield.fill"
-            recommendationKey = "unstable"
-        } else if score >= 2.5 {
-            qualityCondition = "POOR"
-            qualityColor = .orange
-            qualityIcon = "wifi.exclamationmark"
-            recommendationKey = "laggy"
-        } else {
-            qualityCondition = "CRITICAL"
-            qualityColor = .red
-            qualityIcon = "xmark.octagon.fill"
-            recommendationKey = "critical"
-        }
+        if score >= 4.3 { qualityCondition = "EXCELLENT"; qualityColor = .green; qualityIcon = "trophy.fill"; recommendationKey = "perfect" }
+        else if score >= 4.0 { qualityCondition = "GOOD"; qualityColor = .green.opacity(0.8); qualityIcon = "hand.thumbsup.fill"; recommendationKey = "stable" }
+        else if score >= 3.5 { qualityCondition = "FAIR"; qualityColor = .yellow; qualityIcon = "exclamationmark.shield.fill"; recommendationKey = "unstable" }
+        else if score >= 2.5 { qualityCondition = "POOR"; qualityColor = .orange; qualityIcon = "wifi.exclamationmark"; recommendationKey = "laggy" }
+        else { qualityCondition = "CRITICAL"; qualityColor = .red; qualityIcon = "xmark.octagon.fill"; recommendationKey = "critical" }
         
         self.qualityDescription = PingMessages.getRecommendation(for: recommendationKey)
     }
@@ -340,7 +323,6 @@ extension HomeViewModel {
     
     // Fungsi ini dipanggil manual (misal tombol Stop atau Quit App)
     func forceStopSession() {
-        print("FORCE STOP TRIGGERED")
         // Panggil logic finalize yang udah ada
         handleError(msg: "Force Stop")
         // Matikan mesin
