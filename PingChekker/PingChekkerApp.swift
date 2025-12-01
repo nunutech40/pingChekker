@@ -33,12 +33,16 @@ struct PingCheckerApp: App {
                         print("✅ Window Delegate Attached Successfully!")
                     }
                 })
+                .onAppear() {
+                    UpdateService.shared.checkForUpdates()
+                }
 #if os(macOS)
                 .background(VisualEffect().ignoresSafeArea())
 #endif
         }
 #if os(macOS)
         .windowResizability(.contentSize)
+
         .windowStyle(.hiddenTitleBar)
         .commands { SidebarCommands() }
 #endif

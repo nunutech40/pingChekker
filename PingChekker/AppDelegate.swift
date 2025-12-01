@@ -6,6 +6,7 @@
 //
 
 import AppKit
+import FirebaseCore
 
 class AppDelegate: NSObject, NSApplicationDelegate, NSWindowDelegate {
     
@@ -15,6 +16,12 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSWindowDelegate {
     private var hasConfirmedQuit = false
     
     func applicationDidFinishLaunching(_ notification: Notification) {
+        // Ini yang jalan duluan dan menyiapkan pondasi
+        FirebaseApp.configure()
+        
+        // INI HARUS JALAN KEDUA: Baru setup UpdateService
+        UpdateService.shared.setupAndConfigure()
+        
         LocationManager.shared.requestPermission()
     }
     

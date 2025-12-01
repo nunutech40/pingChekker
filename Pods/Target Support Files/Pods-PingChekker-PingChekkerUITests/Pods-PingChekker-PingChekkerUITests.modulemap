@@ -1,0 +1,6 @@
+framework module Pods_PingChekker_PingChekkerUITests {
+  umbrella header "Pods-PingChekker-PingChekkerUITests-umbrella.h"
+
+  export *
+  module * { export * }
+}
