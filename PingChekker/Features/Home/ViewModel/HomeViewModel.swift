@@ -47,7 +47,7 @@ class HomeViewModel: ObservableObject {
     // ID Session Database (UUID). Kalau nil = Belum ada di DB (Draft).
     private var activeSessionID: UUID?
     
-    // 🔥 TRACKER IDENTITAS ROUTER
+    // TRACKER IDENTITAS ROUTER
     private var currentSessionBSSID: String?
     
     // ==========================================
@@ -180,7 +180,7 @@ class HomeViewModel: ObservableObject {
                 host: SettingsStore.shared.targetHost
             )
             
-            // 🔥 CATAT BSSID SAAT INI SEBAGAI "JODOH"
+            // CATAT BSSID SAAT INI SEBAGAI "JODOH"
             self.currentSessionBSSID = detectedBSSID
         }
         
@@ -194,11 +194,11 @@ class HomeViewModel: ObservableObject {
         // --- LOGIC DISCONNECT / FINALIZE ---
         let errorContext = "Host: \(SettingsStore.shared.targetHost), Status: RTO"
         
-        // 🔥 CRASHLIGHTICS: Log Error (Breadcrumb)
+        // CRASHLIGHTICS: Log Error (Breadcrumb)
         Crashlytics.crashlytics().log("NETWORK ERROR: \(errorContext)")
         
-        // 🔥 CRASHLIGHTICS: Set User Identifier (Opsional, tapi bagus)
-        Crashlytics.crashlytics().setUserID(UIDevice.current.identifierForVendor?.uuidString ?? "unknown_device")
+        // CRASHLIGHTICS: Set User Identifier (Opsional, tapi bagus)
+        Crashlytics.crashlytics().setUserID(Host.current().name ?? "unknown_host")
         
         HistoryService.shared.isMonitoring = false
         
@@ -323,6 +323,7 @@ extension HomeViewModel {
     
     // Fungsi ini dipanggil manual (misal tombol Stop atau Quit App)
     func forceStopSession() {
+
         // Panggil logic finalize yang udah ada
         handleError(msg: "Force Stop")
         // Matikan mesin
