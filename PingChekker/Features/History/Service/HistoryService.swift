@@ -21,6 +21,18 @@ class HistoryService {
         return controller.container.viewContext
     }
     
+    var currentSessionID: UUID? {
+        didSet {
+            if oldValue != currentSessionID {
+                NotificationCenter.default.post(
+                    name: NSNotification.Name("currentSessionIDChanged"),
+                    object: nil,
+                    userInfo: ["sessionID": currentSessionID as Any]
+                )
+            }
+        }
+    }
+    
     var isMonitoring: Bool = false {
         didSet {
             if oldValue != isMonitoring {
@@ -91,6 +103,8 @@ class HistoryService {
                 print("❌ [HistoryService] Init failed: \(error)")
             }
         }
+        self.currentSessionID = activeID
+        
         return activeID
     }
     
@@ -110,6 +124,8 @@ class HistoryService {
                 print("🏁 Session Finalized.")
             }
         }
+        
+        self.currentSessionID = nil
     }
     
     // ==========================================
@@ -148,6 +164,8 @@ class HistoryService {
                 print("❌ Delete failed: \(error)")
             }
         }
+        
+        self.currentSessionID = nil
     }
     
     func deleteItem(_ item: NetworkHistory) {
@@ -158,13 +176,22 @@ class HistoryService {
     }
     
     func getWiFiName() -> String { return getNetworkDetails().ssid }
+    func getCurrentBSSID() -> String {
+        return getNetworkDetails().bssid
+    }
     
     private func getNetworkDetails() -> (ssid: String, bssid: String) {
-        #if os(macOS)
+#if os(macOS)
         if let interface = CWWiFiClient.shared().interface() {
-            return (interface.ssid() ?? "Wired/Unknown", interface.bssid() ?? "00:00")
+            // Ambil data real. Kalau izin lokasi ditolak, ini bakal return nil.
+            // Fallback ke "Unknown" dan "00:00"
+            return (
+                interface.ssid() ?? "Wired/Unknown",
+                interface.bssid() ?? "00:00:00:00:00:00"
+            )
         }
-        #endif
+#endif
+        // Fallback kalau gak ada hardware WiFi
         return ("Unknown Network", "-")
     }
 }

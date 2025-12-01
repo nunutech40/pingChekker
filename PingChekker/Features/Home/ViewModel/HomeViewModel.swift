@@ -46,6 +46,9 @@ class HomeViewModel: ObservableObject {
     // ID Session Database (UUID). Kalau nil = Belum ada di DB (Draft).
     private var activeSessionID: UUID?
     
+    // 🔥 TRACKER IDENTITAS ROUTER
+    private var currentSessionBSSID: String?
+    
     // ==========================================
     // MARK: - INIT & BINDING
     // ==========================================
@@ -132,33 +135,56 @@ class HomeViewModel: ObservableObject {
             return
         }
         
+        // Update Global Status
         if !HistoryService.shared.isMonitoring {
             HistoryService.shared.isMonitoring = true
         }
         
-        // Reset Error State
         if isOffline { self.isOffline = false }
-        
-        // 2. SIMPAN DATA VALID
         self.lastGoodResult = result
+        
+        // 🔥 LOGIC BARU: DETEKSI "SELINGKUH" JARINGAN (SEAMLESS ROAMING) 🔥
+        // Kita cek BSSID saat ini. Kalau beda sama BSSID sesi aktif, berarti user pindah WiFi.
+        let detectedBSSID = HistoryService.shared.getCurrentBSSID()
+        
+        if let recordedBSSID = currentSessionBSSID,
+           activeSessionID != nil,
+           recordedBSSID != detectedBSSID {
+            
+            print("🔀 Network Handover Detected! (\(recordedBSSID) -> \(detectedBSSID))")
+            
+            // A. Finalize Sesi Lama (Save data terakhir di WiFi lama)
+            if let sessionID = activeSessionID, let validData = lastGoodResult {
+                HistoryService.shared.updateSession(
+                    id: sessionID,
+                    latency: validData.latencyMs,
+                    mos: validData.sessionMOS > 0 ? validData.sessionMOS : validData.mosScore,
+                    status: categoryText
+                )
+            }
+            
+            // B. Reset State (Biar di bawah dia bikin sesi baru)
+            activeSessionID = nil
+            // Jangan reset lastGoodResult biar transisi UI mulus, atau reset kalau mau strict.
+            // Kita biarin aja visualnya jalan terus.
+        }
         
         // 3. LOGIC START SESSION (DRAFT)
         if activeSessionID == nil {
             print("🔍 Checking DB for existing session...")
-            
-            // Restore Visual dulu
             checkAndRestoreHistory()
             
             // Initialize Session (Upsert Logic)
             self.activeSessionID = HistoryService.shared.initializeSession(
                 host: SettingsStore.shared.targetHost
             )
+            
+            // 🔥 CATAT BSSID SAAT INI SEBAGAI "JODOH"
+            self.currentSessionBSSID = detectedBSSID
         }
         
-        // 4. UPDATE UI REALTIME
+        // 4. UPDATE UI
         updateRealtimeUI(latency: result.latencyMs)
-        
-        // 5. UPDATE UI QUALITY
         let scoreToJudge = result.sessionMOS > 0 ? result.sessionMOS : result.mosScore
         updateQualityUI(score: scoreToJudge, sessionLatency: result.sessionAvgLatency)
     }

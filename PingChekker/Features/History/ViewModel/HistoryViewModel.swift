@@ -10,6 +10,7 @@ import CoreData
 
 class HistoryViewModel: ObservableObject {
     
+    @Published var activeID: UUID?
     // --- STATE BUAT ALERT ---
     @Published var showRunningAlert: Bool = false
     @Published var showDeleteConfirmation: Bool = false
@@ -17,13 +18,45 @@ class HistoryViewModel: ObservableObject {
     
     private let service: HistoryService
     
+    // Nampung korban yang mau dieksekusi
+    var itemToDelete: NetworkHistory?
+    
+    
     // Default-nya tetep .shared biar UI asli gak error
     init(service: HistoryService = .shared) {
         self.service = service
+        // 1. Ambil nilai awal saat view dibuka
+        self.activeID = service.currentSessionID
+        
+        // 2. Dengerin perubahan ID (Notification)
+        NotificationCenter.default.addObserver(
+            self,
+            selector: #selector(handleSessionChange(_:)),
+            name: NSNotification.Name("currentSessionIDChanged"),
+            object: nil
+        )
     }
     
-    // Nampung korban yang mau dieksekusi
-    var itemToDelete: NetworkHistory?
+    deinit {
+        NotificationCenter.default.removeObserver(self)
+    }
+    
+    @objc private func handleSessionChange(_ notification: Notification) {
+        DispatchQueue.main.async {
+            // Update state UI kalau ID sesi berubah
+            if let id = notification.userInfo?["sessionID"] as? UUID {
+                self.activeID = id
+            } else {
+                self.activeID = nil
+            }
+        }
+    }
+    
+    // Return True kalau item ini adalah sesi yang lagi jalan
+    func isActiveSession(_ item: NetworkHistory) -> Bool {
+        guard let currentID = activeID else { return false }
+        return item.id == currentID
+    }
     
     // Format tanggal sesuai request aneh lo: "17-08-1990:12.30"
     private let dateFormatter: DateFormatter = {

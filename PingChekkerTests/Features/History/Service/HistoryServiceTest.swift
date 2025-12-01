@@ -125,6 +125,39 @@ class HistoryServiceTest: XCTestCase {
         XCTAssertEqual(count, 2, "Harusnya ada 2 baris karena host beda")
     }
     
+    // 🔥 TEST BARU: ROAMING LOGIC (SSID SAMA, BSSID BEDA) 🔥
+    func test_InitializeSession_SameSSID_DifferentBSSID_CreatesNewRow() {
+        // Skenario: Pindah dari Router A ke Router B (Nama WiFi sama "Wired/Unknown")
+        // Masalah: Di Unit Test, 'getNetworkDetails' selalu return default ("Wired/Unknown", "00:00").
+        
+        let host = "8.8.8.8"
+        
+        // 1. MANIPULASI DATA LAMA DI DB
+        // Kita pura-pura udah punya history dari "Router A" yang BSSID-nya BEDA.
+        let context = mockController.container.viewContext
+        context.performAndWait {
+            let oldLog = NetworkHistory(context: context)
+            oldLog.id = UUID()
+            oldLog.timestamp = Date().addingTimeInterval(-3600)
+            oldLog.host = host
+            oldLog.networkName = "Wired/Unknown" // Sama kayak default test
+            oldLog.bssid = "AA:AA:AA:AA:AA:AA"   // BEDA dari default test (00:00)
+            oldLog.status = "Finished"
+            try? context.save()
+        }
+        
+        // 2. When: Kita init session baru
+        // (Service bakal baca BSSID "00:00" dari hardware simulator/default)
+        let newID = service.initializeSession(host: host)
+        
+        // 3. Then:
+        // Harusnya bikin BARU (karena AA:AA != 00:00)
+        XCTAssertNotNil(newID)
+        
+        let count = try? context.count(for: NetworkHistory.fetchRequest())
+        XCTAssertEqual(count, 2, "Harusnya ada 2 baris karena BSSID beda (Roaming)")
+    }
+    
     // ==========================================
     // KATEGORI 2: INTEGRITY (UPDATE FINALIZATION)
     // ==========================================

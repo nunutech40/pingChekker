@@ -30,7 +30,7 @@ struct HistoryView: View {
                                 Button(role: .destructive) {
                                     viewModel.requestDelete(item: item)
                                 } label: {
-                                    Label("Delete This History", systemImage: "trash")
+                                    Label("Delete This History", systemImage: "trash") // Key
                                 }
                             }
                     }
@@ -39,7 +39,6 @@ struct HistoryView: View {
                 
                 // Footer
                 HStack {
-                    // Pakai String Interpolation buat angka
                     Text("\(historyItems.count) records")
                         .font(.caption).foregroundStyle(.secondary)
                     
@@ -55,20 +54,18 @@ struct HistoryView: View {
         }
         .navigationTitle("Network History")
         
-        // --- ALERT 1: MONITORING ACTIVE ---
+        // --- ALERTS ---
         .alert("Monitoring Active", isPresented: $viewModel.showRunningAlert) {
             Button("OK", role: .cancel) { }
         } message: {
             Text("Please stop monitoring first before deleting history data.")
         }
         
-        // --- ALERT 2: DELETE ONE ---
         .alert("Delete This Item?", isPresented: $viewModel.showDeleteConfirmation) {
             Button("Cancel", role: .cancel) { }
             Button("Delete", role: .destructive) { viewModel.confirmDelete() }
         }
         
-        // --- ALERT 3: CLEAR ALL ---
         .alert("Delete ALL History?", isPresented: $viewModel.showClearAllConfirmation) {
             Button("Cancel", role: .cancel) { }
             Button("Delete All", role: .destructive) { viewModel.confirmClearAll() }
@@ -102,16 +99,32 @@ private extension HistoryView {
     func historyRow(for item: NetworkHistory) -> some View {
         let evaluation = viewModel.evaluateQuality(mos: item.mos)
         
+        // 🔥 CEK APAKAH BARIS INI ADALAH SESI AKTIF?
+        let isActive = viewModel.isActiveSession(item)
+        
         return HStack(alignment: .center, spacing: 12) {
             
-            // Info Jaringan
+            // KOLOM KIRI: Info Jaringan
             VStack(alignment: .leading, spacing: 4) {
                 HStack {
-                    Image(systemName: "wifi")
+                    // Ikon berubah kalau aktif + Animasi
+                    Image(systemName: isActive ? "waveform.path.ecg" : "wifi")
                         .font(.caption)
-                        .foregroundColor(.blue)
+                        .foregroundColor(isActive ? .green : .blue)
+                        .symbolEffect(.pulse, isActive: isActive) // Animasi Detak Jantung
+                    
                     Text(item.networkName ?? "Unknown WiFi")
                         .font(.system(size: 14, weight: .semibold))
+                    
+                    // Badge ACTIVE
+                    if isActive {
+                        Text("ACTIVE")
+                            .font(.system(size: 8, weight: .bold))
+                            .foregroundColor(.white)
+                            .padding(.horizontal, 4)
+                            .padding(.vertical, 2)
+                            .background(Capsule().fill(Color.green))
+                    }
                 }
                 
                 Text("Target: \(item.host ?? "-")")
@@ -126,7 +139,7 @@ private extension HistoryView {
             
             Spacer()
             
-            // Statistik
+            // KOLOM KANAN: Statistik
             HStack(spacing: 12) {
                 VStack(alignment: .trailing, spacing: 0) {
                     Text("\(Int(item.latency))")
@@ -140,7 +153,6 @@ private extension HistoryView {
                     .fill(Color.secondary.opacity(0.2))
                     .frame(width: 1, height: 25)
                 
-                // Badge MOS (Teks status sudah dilocalize di ViewModel)
                 VStack(alignment: .center, spacing: 2) {
                     Image(systemName: evaluation.icon)
                         .font(.system(size: 14))
@@ -158,6 +170,12 @@ private extension HistoryView {
                 .frame(width: 50)
             }
         }
-        .padding(.vertical, 4)
+        .padding(.vertical, 8)
+        .padding(.horizontal, 8)
+        // Highlight background kalau aktif
+        .background(
+            isActive ? Color.green.opacity(0.05) : Color.clear
+        )
+        .cornerRadius(8)
     }
 }
