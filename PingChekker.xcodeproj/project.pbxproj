@@ -29,9 +29,22 @@
 		A05ECEFB2D8722A700A018E5 /* PingChekkerUITests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = PingChekkerUITests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
 
+/* Begin PBXFileSystemSynchronizedBuildFileExceptionSet section */
+		A0FC2BF12EDD358A00868161 /* Exceptions for "PingChekker" folder in "PingChekker" target */ = {
+			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
+			membershipExceptions = (
+				Info.plist,
+			);
+			target = A05ECEDF2D8722A500A018E5 /* PingChekker */;
+		};
+/* End PBXFileSystemSynchronizedBuildFileExceptionSet section */
+
 /* Begin PBXFileSystemSynchronizedRootGroup section */
 		A05ECEE22D8722A500A018E5 /* PingChekker */ = {
 			isa = PBXFileSystemSynchronizedRootGroup;
+			exceptions = (
+				A0FC2BF12EDD358A00868161 /* Exceptions for "PingChekker" folder in "PingChekker" target */,
+			);
 			path = PingChekker;
 			sourceTree = "<group>";
 		};
@@ -406,7 +419,10 @@
 				ENABLE_HARDENED_RUNTIME = YES;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = PingChekker/Info.plist;
 				INFOPLIST_KEY_NSHumanReadableCopyright = "";
+				INFOPLIST_KEY_NSLocalNetworkUsageDescription = "PingChekker needs access to your local network to identify your device's local IP address and network interface details.";
+				INFOPLIST_KEY_NSLocationUsageDescription = "PingChekker needs access to your location to identify Wi-Fi networks (SSID & BSSID) for accurate history logging.";
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/../Frameworks",
@@ -436,7 +452,10 @@
 				ENABLE_HARDENED_RUNTIME = YES;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = PingChekker/Info.plist;
 				INFOPLIST_KEY_NSHumanReadableCopyright = "";
+				INFOPLIST_KEY_NSLocalNetworkUsageDescription = "PingChekker needs access to your local network to identify your device's local IP address and network interface details.";
+				INFOPLIST_KEY_NSLocationUsageDescription = "PingChekker needs access to your location to identify Wi-Fi networks (SSID & BSSID) for accurate history logging.";
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/../Frameworks",

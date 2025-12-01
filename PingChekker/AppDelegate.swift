@@ -14,6 +14,10 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSWindowDelegate {
     // 🔥 FLAG SAKTI: Penanda kalau user udah setuju keluar
     private var hasConfirmedQuit = false
     
+    func applicationDidFinishLaunching(_ notification: Notification) {
+        LocationManager.shared.requestPermission()
+    }
+    
     // 1. Logic biar App mati kalau window ditutup
     func applicationShouldTerminateAfterLastWindowClosed(_ sender: NSApplication) -> Bool {
         return true

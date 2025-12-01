@@ -45,35 +45,45 @@ class HistoryService {
         var activeID: UUID?
         let netInfo = self.getNetworkDetails()
         
-        // Pake perform (Main Queue)
         context.performAndWait {
             let request: NSFetchRequest<NetworkHistory> = NetworkHistory.fetchRequest()
-            request.predicate = NSPredicate(format: "host == %@ AND networkName == %@", host, netInfo.ssid)
+            
+            // 🔥 PERBAIKAN LOGIC DISINI 🔥
+            // Jangan cuma cek Nama (SSID), tapi cek Fisik Router (BSSID).
+            // Kalau Router-nya beda (Rumah vs Kantor), dia bakal dianggap BARU.
+            request.predicate = NSPredicate(
+                format: "host == %@ AND bssid == %@ AND networkName == %@",
+                host,
+                netInfo.bssid,
+                netInfo.ssid
+            )
+            print("cek request: \(request)")
             request.fetchLimit = 1
             
             do {
                 let results = try context.fetch(request)
                 
                 if let existingLog = results.first {
-                    print("♻️ [HistoryService] Resuming session...")
+                    // Router SAMA -> Lanjutkan Sesi (Resume)
+                    print("♻️ [HistoryService] Found existing session on router \(netInfo.bssid). Resuming...")
                     existingLog.timestamp = Date()
                     existingLog.status = "Monitoring..."
                     activeID = existingLog.id
                 } else {
-                    print("✨ [HistoryService] Creating new session...")
+                    // Router BEDA -> Bikin Baru
+                    print("✨ [HistoryService] New Router/Network Detected (\(netInfo.bssid)). Creating Row...")
                     let newLog = NetworkHistory(context: context)
                     activeID = UUID()
                     newLog.id = activeID
                     newLog.timestamp = Date()
                     newLog.host = host
                     newLog.networkName = netInfo.ssid
-                    newLog.bssid = netInfo.bssid
+                    newLog.bssid = netInfo.bssid // Penting!
                     newLog.latency = 0.0
                     newLog.mos = 0.0
                     newLog.status = "Monitoring..."
                 }
                 
-                // Save Main Context -> Langsung Update UI
                 if context.hasChanges {
                     try context.save()
                 }

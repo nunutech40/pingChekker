@@ -132,6 +132,10 @@ class HomeViewModel: ObservableObject {
             return
         }
         
+        if !HistoryService.shared.isMonitoring {
+            HistoryService.shared.isMonitoring = true
+        }
+        
         // Reset Error State
         if isOffline { self.isOffline = false }
         
