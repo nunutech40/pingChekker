@@ -57,36 +57,62 @@ class HistoryService {
         var activeID: UUID?
         let netInfo = self.getNetworkDetails()
         
-        context.performAndWait {
-            let request: NSFetchRequest<NetworkHistory> = NetworkHistory.fetchRequest()
+        // --- 1. DEFINISIKAN PREDICATE KETAT SEBAGAI DEFAULT ---
+        // Default: Host + BSSID + SSID (Logika awal Anda untuk jaringan stabil)
+        var predicate = NSPredicate(
+            format: "host == %@ AND bssid == %@ AND networkName == %@",
+            host,
+            netInfo.bssid,
+            netInfo.ssid
+        )
+        
+        // --- 2. KONDISI PELONGGARAN BSSID ---
+        // Cek apakah ini Hotspot Pribadi (iPhone) atau jaringan Wired/Unknown.
+        // Hotspot/iPhone: BSSID-nya sering rotasi (berubah).
+        // Wired/Unknown: BSSID tidak valid ("-" atau "00:00:00...").
+        let isLikelyUnstableBSSID: Bool = {
+            let ssid = netInfo.ssid.localizedCaseInsensitiveContains("iphone") ||
+            netInfo.ssid.localizedCaseInsensitiveContains("hotspot")
             
-            // Jangan cuma cek Nama (SSID), tapi cek Fisik Router (BSSID).
-            // Kalau Router-nya beda (Rumah vs Kantor), dia bakal dianggap BARU.
-            request.predicate = NSPredicate(
-                format: "host == %@ AND bssid == %@ AND networkName == %@",
+            let bssidInvalid = netInfo.bssid == "-" || netInfo.bssid.prefix(2) == "00"
+            
+            return ssid || bssidInvalid
+        }()
+        
+        if isLikelyUnstableBSSID {
+            // Jika BSSID tidak stabil: HANYA CEK HOST + SSID.
+            // Ini akan memastikan sesi Hotspot/Wired berlanjut sebagai SATU entri,
+            // meskipun BSSID-nya berubah setiap saat.
+            predicate = NSPredicate(
+                format: "host == %@ AND networkName == %@",
                 host,
-                netInfo.bssid,
                 netInfo.ssid
             )
+        }
+        
+        // --- 3. EKSEKUSI PENCARIAN ---
+        context.performAndWait {
+            let request: NSFetchRequest<NetworkHistory> = NetworkHistory.fetchRequest()
+            request.predicate = predicate // Menggunakan predicate yang sudah dipilih
             request.fetchLimit = 1
             
             do {
                 let results = try context.fetch(request)
                 
                 if let existingLog = results.first {
-                    // Router SAMA -> Lanjutkan Sesi (Resume)
+                    // Router SAMA (Lanjut Sesi / Resume)
                     existingLog.timestamp = Date()
                     existingLog.status = "Monitoring..."
                     activeID = existingLog.id
                 } else {
-                    // Router BEDA -> Bikin Baru
+                    // Router BEDA (Bikin Baru)
                     let newLog = NetworkHistory(context: context)
                     activeID = UUID()
                     newLog.id = activeID
                     newLog.timestamp = Date()
                     newLog.host = host
                     newLog.networkName = netInfo.ssid
-                    newLog.bssid = netInfo.bssid // Penting!
+                    newLog.bssid = netInfo.bssid // Simpan BSSID yang ada (meskipun rotasi)
                     newLog.latency = 0.0
                     newLog.mos = 0.0
                     newLog.status = "Monitoring..."
