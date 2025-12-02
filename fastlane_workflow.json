@@ -1,0 +1,113 @@
+{
+  "diagram": {
+    "id": "ci_cd_flow",
+    "name": "CI CD Flow",
+    "cells": [
+      {
+        "id": "start",
+        "value": "START",
+        "style": "ellipse;whiteSpace=wrap;html=1;",
+        "vertex": 1,
+        "geometry": { "x": 180, "y": 30, "width": 120, "height": 60 }
+      },
+      {
+        "id": "commit",
+        "value": "Developer Commit & Push",
+        "style": "rounded=1;whiteSpace=wrap;html=1;",
+        "vertex": 1,
+        "geometry": { "x": 140, "y": 120, "width": 200, "height": 60 }
+      },
+      {
+        "id": "trigger",
+        "value": "GitHub Trigger: RUN CI/CD Workflow",
+        "style": "rounded=1;whiteSpace=wrap;html=1;",
+        "vertex": 1,
+        "geometry": { "x": 100, "y": 210, "width": 280, "height": 60 }
+      },
+      {
+        "id": "dispatch",
+        "value": "Workflow Dispatched to Local Runner",
+        "style": "rounded=1;whiteSpace=wrap;html=1;",
+        "vertex": 1,
+        "geometry": { "x": 100, "y": 300, "width": 280, "height": 60 }
+      },
+      {
+        "id": "pull",
+        "value": "Local Runner Pulls Latest Code",
+        "style": "rounded=1;whiteSpace=wrap;html=1;",
+        "vertex": 1,
+        "geometry": { "x": 120, "y": 390, "width": 240, "height": 60 }
+      },
+      {
+        "id": "testlane",
+        "value": "Fastlane test_lane (Build + Test)",
+        "style": "rounded=1;whiteSpace=wrap;html=1;",
+        "vertex": 1,
+        "geometry": { "x": 120, "y": 480, "width": 240, "height": 60 }
+      },
+      {
+        "id": "decision",
+        "value": "Tests Success?",
+        "style": "rhombus;whiteSpace=wrap;html=1;",
+        "vertex": 1,
+        "geometry": { "x": 150, "y": 580, "width": 180, "height": 120 }
+      },
+      {
+        "id": "fail",
+        "value": "Notify GitHub: FAILURE",
+        "style": "rounded=1;whiteSpace=wrap;html=1;fillColor=#ffcccc;",
+        "vertex": 1,
+        "geometry": { "x": 380, "y": 600, "width": 200, "height": 60 }
+      },
+      {
+        "id": "stopfail",
+        "value": "STOP",
+        "style": "ellipse;whiteSpace=wrap;html=1;fillColor=#ffcccc;",
+        "vertex": 1,
+        "geometry": { "x": 380, "y": 690, "width": 120, "height": 60 }
+      },
+      {
+        "id": "release",
+        "value": "Fastlane release_lane",
+        "style": "rounded=1;whiteSpace=wrap;html=1;fillColor=#ccffcc;",
+        "vertex": 1,
+        "geometry": { "x": 20, "y": 720, "width": 240, "height": 60 }
+      },
+      {
+        "id": "archive",
+        "value": "Archive App",
+        "style": "rounded=1;whiteSpace=wrap;html=1;fillColor=#ccffcc;",
+        "vertex": 1,
+        "geometry": { "x": 20, "y": 810, "width": 240, "height": 60 }
+      },
+      {
+        "id": "sign",
+        "value": "Code Sign",
+        "style": "rounded=1;whiteSpace=wrap;html=1;fillColor=#ccffcc;",
+        "vertex": 1,
+        "geometry": { "x": 20, "y": 900, "width": 240, "height": 60 }
+      },
+      {
+        "id": "notar",
+        "value": "Apple Notarization",
+        "style": "rounded=1;whiteSpace=wrap;html=1;fillColor=#ccffcc;",
+        "vertex": 1,
+        "geometry": { "x": 20, "y": 990, "width": 240, "height": 60 }
+      },
+      {
+        "id": "output",
+        "value": "Output .app Ready",
+        "style": "rounded=1;whiteSpace=wrap;html=1;fillColor=#ccffcc;",
+        "vertex": 1,
+        "geometry": { "x": 20, "y": 1080, "width": 260, "height": 60 }
+      },
+      {
+        "id": "end",
+        "value": "END",
+        "style": "ellipse;whiteSpace=wrap;html=1;fillColor=#ccffcc;",
+        "vertex": 1,
+        "geometry": { "x": 20, "y": 1170, "width": 120, "height": 60 }
+      }
+    ]
+  }
+}

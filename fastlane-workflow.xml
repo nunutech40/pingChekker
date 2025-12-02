@@ -1,0 +1,148 @@
+<mxfile host="app.diagrams.net" modified="2025-01-01T00:00:00.000Z" agent="5.0" version="20.8.10" editor="diagramly">
+  <diagram id="CI_CD_PINGCHEKKER" name="CI-CD Flow">
+    <mxGraphModel dx="1420" dy="780" grid="1" gridSize="10" guides="1" tooltips="1" connect="1">
+      <root>
+        <mxCell id="0"/>
+        <mxCell id="1" parent="0"/>
+
+        <!-- Start -->
+        <mxCell id="start" value="START" style="ellipse;whiteSpace=wrap;html=1;strokeWidth=2" vertex="1" parent="1">
+          <mxGeometry x="60" y="40" width="120" height="60" as="geometry"/>
+        </mxCell>
+
+        <!-- Commit & Push -->
+        <mxCell id="commit" value="Developer Commit &amp; Push" style="rounded=1;whiteSpace=wrap;html=1;strokeWidth=2" vertex="1" parent="1">
+          <mxGeometry x="60" y="150" width="240" height="60" as="geometry"/>
+        </mxCell>
+
+        <!-- Trigger -->
+        <mxCell id="trigger" value="GitHub Trigger: RUN CI/CD Workflow" style="rounded=1;whiteSpace=wrap;html=1;strokeWidth=2" vertex="1" parent="1">
+          <mxGeometry x="60" y="260" width="300" height="60" as="geometry"/>
+        </mxCell>
+
+        <!-- Send to runner -->
+        <mxCell id="dispatch" value="Workflow Dispatched to Local Runner" style="rounded=1;whiteSpace=wrap;html=1;strokeWidth=2" vertex="1" parent="1">
+          <mxGeometry x="60" y="370" width="300" height="60" as="geometry"/>
+        </mxCell>
+
+        <!-- Pull code -->
+        <mxCell id="pull" value="Local Runner Pulls Latest Code" style="rounded=1;whiteSpace=wrap;html=1;strokeWidth=2" vertex="1" parent="1">
+          <mxGeometry x="60" y="480" width="280" height="60" as="geometry"/>
+        </mxCell>
+
+        <!-- Fastlane test_lane -->
+        <mxCell id="testlane" value="Fastlane test_lane&#10;(Build + Run Tests)" style="rounded=1;whiteSpace=wrap;html=1;strokeWidth=2" vertex="1" parent="1">
+          <mxGeometry x="60" y="590" width="280" height="80" as="geometry"/>
+        </mxCell>
+
+        <!-- Decision -->
+        <mxCell id="decision" value="Tests Success?" style="rhombus;whiteSpace=wrap;html=1;strokeWidth=2" vertex="1" parent="1">
+          <mxGeometry x="100" y="720" width="160" height="100" as="geometry"/>
+        </mxCell>
+
+        <!-- Failure -->
+        <mxCell id="fail" value="Notify GitHub: FAILURE" style="rounded=1;whiteSpace=wrap;html=1;strokeWidth=2;fillColor=#ffcccc" vertex="1" parent="1">
+          <mxGeometry x="360" y="740" width="200" height="60" as="geometry"/>
+        </mxCell>
+
+        <!-- Stop (failure) -->
+        <mxCell id="stopfail" value="STOP" style="ellipse;whiteSpace=wrap;html=1;strokeWidth=2;fillColor=#ffcccc" vertex="1" parent="1">
+          <mxGeometry x="360" y="830" width="120" height="60" as="geometry"/>
+        </mxCell>
+
+        <!-- Success → release_lane -->
+        <mxCell id="release" value="Fastlane release_lane" style="rounded=1;whiteSpace=wrap;html=1;strokeWidth=2;fillColor=#ccffcc" vertex="1" parent="1">
+          <mxGeometry x="60" y="850" width="240" height="60" as="geometry"/>
+        </mxCell>
+
+        <!-- Archive -->
+        <mxCell id="archive" value="Archive PingChekker App" style="rounded=1;whiteSpace=wrap;html=1;strokeWidth=2;fillColor=#ccffcc" vertex="1" parent="1">
+          <mxGeometry x="60" y="950" width="240" height="60" as="geometry"/>
+        </mxCell>
+
+        <!-- Sign -->
+        <mxCell id="sign" value="Code Sign with Developer ID" style="rounded=1;whiteSpace=wrap;html=1;strokeWidth=2;fillColor=#ccffcc" vertex="1" parent="1">
+          <mxGeometry x="60" y="1050" width="240" height="60" as="geometry"/>
+        </mxCell>
+
+        <!-- Notarization -->
+        <mxCell id="notar" value="Apple Notarization" style="rounded=1;whiteSpace=wrap;html=1;strokeWidth=2;fillColor=#ccffcc" vertex="1" parent="1">
+          <mxGeometry x="60" y="1150" width="240" height="60" as="geometry"/>
+        </mxCell>
+
+        <!-- Output -->
+        <mxCell id="output" value="Output: .app Ready to Ship" style="rounded=1;whiteSpace=wrap;html=1;strokeWidth=2;fillColor=#ccffcc" vertex="1" parent="1">
+          <mxGeometry x="60" y="1250" width="280" height="60" as="geometry"/>
+        </mxCell>
+
+        <!-- End -->
+        <mxCell id="end" value="END" style="ellipse;whiteSpace=wrap;html=1;strokeWidth=2;fillColor=#ccffcc" vertex="1" parent="1">
+          <mxGeometry x="60" y="1360" width="120" height="60" as="geometry"/>
+        </mxCell>
+
+
+        <!-- CONNECTORS -->
+        <mxCell id="s-commit" edge="1" parent="1" source="start" target="commit">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+
+        <mxCell id="c-trigger" edge="1" parent="1" source="commit" target="trigger">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+
+        <mxCell id="t-dispatch" edge="1" parent="1" source="trigger" target="dispatch">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+
+        <mxCell id="d-pull" edge="1" parent="1" source="dispatch" target="pull">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+
+        <mxCell id="p-test" edge="1" parent="1" source="pull" target="testlane">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+
+        <mxCell id="t-decision" edge="1" parent="1" source="testlane" target="decision">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+
+        <!-- decision fail -->
+        <mxCell id="dec-fail" edge="1" parent="1" source="decision" target="fail">
+          <mxGeometry relative="1">
+            <mxPoint x="310" y="760" as="targetPoint"/>
+          </mxGeometry>
+        </mxCell>
+
+        <mxCell id="fail-stop" edge="1" parent="1" source="fail" target="stopfail">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+
+        <!-- decision success -->
+        <mxCell id="dec-success" edge="1" parent="1" source="decision" target="release">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+
+        <mxCell id="rel-archive" edge="1" parent="1" source="release" target="archive">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+
+        <mxCell id="arch-sign" edge="1" parent="1" source="archive" target="sign">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+
+        <mxCell id="sign-notar" edge="1" parent="1" source="sign" target="notar">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+
+        <mxCell id="notar-output" edge="1" parent="1" source="notar" target="output">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+
+        <mxCell id="out-end" edge="1" parent="1" source="output" target="end">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+
+      </root>
+    </mxGraphModel>
+  </diagram>
+</mxfile>
