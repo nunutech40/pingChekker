@@ -33,6 +33,7 @@ Menggunakan SimplePing untuk mengirim ICMP packet ke 8.8.8.8 tiap 1 detik, lalu 
 ## 📏 Definisi & Cara Perhitungan
 
 ## Flow Use Simple Ping to Send Ping and Get return as ms.
+</br>
 <img width="424" height="1022" alt="Use Ping Simple Work Flow" src="https://github.com/user-attachments/assets/7803d996-85f6-4e57-afa1-ca7a0c355e35" />
 
 
