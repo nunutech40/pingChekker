@@ -1,10 +1,12 @@
 # PingChekker 📡
 
 PingChekker adalah utilitas native macOS yang digunakan untuk memonitor kualitas koneksi internet secara realtime. Berbeda dengan perintah ping biasa di terminal, PingChekker menerjemahkan data latensi mentah menjadi status yang mudah dipahami (misalnya: "Elite", "Bagus", "Lag") dan menampilkan stabilitas jaringan melalui antarmuka bergaya widget yang ringkas.
+</br>
+<img width="483" height="256" alt="Screenshot 2025-12-02 at 14 29 31" src="https://github.com/user-attachments/assets/476522fc-6483-447e-a2ae-7ea6bdbb0124" />
+</br>
+<img width="652" height="480" alt="Screenshot 2025-12-02 at 14 29 37" src="https://github.com/user-attachments/assets/66235b83-1eda-48b0-98ce-ed67339645d6" />
 
-<p align="center">
-<img src="https://github.com/user-attachments/assets/350d5552-a218-416d-9d36-733f928f549f" width="600"/>
-</p>
+
 
 ## 🚀 Fitur Utama
 
