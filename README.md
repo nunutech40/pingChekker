@@ -7,18 +7,31 @@ PingChekker adalah utilitas native macOS yang digunakan untuk memonitor kualitas
 <img width="652" height="480" alt="Screenshot 2025-12-02 at 14 29 37" src="https://github.com/user-attachments/assets/66235b83-1eda-48b0-98ce-ed67339645d6" />
 
 
+## 🥇 Fitur Utama
+- **Latency Realtime + Status Visual**  
+  Menampilkan latency (ms) secara langsung dan mengkategorikannya menjadi status seperti *ELITE*, *GOOD*, atau *SLOW*.
+  
+- **Skor Kualitas MOS (1.0 – 5.0)**  
+  Memberikan Mean Opinion Score lengkap dengan penjelasan manusiawi seperti *"Sangat aman untuk Zoom"* atau *"Game akan terasa laggy"*.
 
-## 🚀 Fitur Utama
+## 🛠️ Fitur Tambahan
+- **Riwayat Pemantauan (Network History)**  
+  Menyimpan log setiap sesi berdasarkan Host, SSID, dan BSSID untuk melihat pola kualitas jaringan.
+  
+- **Detail Wi-Fi Lengkap**  
+  Menampilkan SSID, BSSID, dan kekuatan sinyal (RSSI).
 
-- Monitoring Realtime: Menampilkan latensi (ms) menggunakan speedometer dinamis.
-- Analisis Stabilitas: Menghitung Jitter dan Packet Loss untuk mengetahui kualitas jaringan yang sebenarnya.
-- Rata-Rata Sesi: Memberikan skor kualitas berdasarkan keseluruhan durasi sesi pemantauan.
-- Feedback Manusiawi: Pesan seperti "Sangat cocok untuk gaming", "Bagus untuk streaming".
-- Desain Native: SwiftUI + NSVisualEffectView.
-- Menu Bar Support: (Segera hadir)
+- **Menu Bar Support**  
+  Akses cepat kualitas jaringan langsung dari macOS Menu Bar.
+
+## ✨ Keunggulan Desain
+- **Native, Ringan, dan Cepat**  
+  Dibangun dengan SwiftUI untuk performa dan integrasi maksimal dengan macOS.
+
+- **Finalisasi Sesi Otomatis**  
+  Menggunakan logika BSSID + Core Data agar sesi monitoring disimpan dengan rapi ketika jaringan berubah atau aplikasi ditutup.
 
 ## 🛠 Cara Kerja
-
 PingChekker bekerja menggunakan mekanisme mikro dan makro untuk menghasilkan data yang stabil dan akurat.
 
 ### Mekanisme Mikro
