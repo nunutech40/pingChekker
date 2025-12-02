@@ -6,7 +6,7 @@
 //
 
 import Foundation
-import CoreWLAN // Framework Wajib buat macOS WiFi
+import CoreWLAN 
 
 // Model Data Sederhana
 struct WifiDetails {
