@@ -51,14 +51,13 @@ struct PingCheckerApp: App {
         MenuBarExtra {
             // Gunakan LocalizedStringKey untuk teks dinamis
             // viewModel.categoryText isinya KEY (misal "ELITE"), jadi harus dibungkus LocalizedStringKey biar diterjemahin
-            Text("Status: \(LocalizedStringKey(viewModel.categoryText))")
-                .font(.headline)
+            Text(String(localized: "Status: \(viewModel.categoryText)"))
             
-            // "Latency:" (Key)
-            Text("Latency: \(viewModel.latencyText)")
+            // 2. KOREKSI Latency: Gunakan String(localized:) untuk string sederhana
+            Text(String(localized: "Latency: \(viewModel.latencyText)"))
             
-            // "Quality Score:" (Key)
-            Text("Quality Score: \(viewModel.mosScore) / 5.0")
+            // 3. KOREKSI Quality Score:
+            Text(String(localized: "Quality Score: \(viewModel.mosScore) / 5.0"))
             
             Divider()
             

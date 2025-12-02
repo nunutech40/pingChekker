@@ -12,7 +12,7 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSWindowDelegate {
     
     var homeViewModel: HomeViewModel?
     
-    // 🔥 FLAG SAKTI: Penanda kalau user udah setuju keluar
+    // FLAG SAKTI: Penanda kalau user udah setuju keluar
     private var hasConfirmedQuit = false
     
     func applicationDidFinishLaunching(_ notification: Notification) {
