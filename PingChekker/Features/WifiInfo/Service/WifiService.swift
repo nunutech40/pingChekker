@@ -6,7 +6,7 @@
 //
 
 import Foundation
-import CoreWLAN 
+import CoreWLAN
 
 // Model Data Sederhana
 struct WifiDetails {
