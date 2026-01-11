@@ -458,7 +458,14 @@
       }
     },
     "ACTIVE" : {
-
+      "localizations" : {
+        "id" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "AKTIF"
+          }
+        }
+      }
     },
     "Apply Changes" : {
       "localizations" : {
@@ -555,7 +562,14 @@
       }
     },
     "Created by Nunu Nugraha" : {
-
+      "localizations" : {
+        "id" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Dibuat oleh Nunu Nugraha"
+          }
+        }
+      }
     },
     "Created out of frustration with unstable internet.\nRuthless latency & jitter monitoring." : {
       "localizations" : {
@@ -690,9 +704,6 @@
         }
       }
     },
-    "Dukung Developer Indie" : {
-
-    },
     "ELITE" : {
       "extractionState" : "stale",
       "localizations" : {
@@ -737,6 +748,17 @@
         }
       }
     },
+    "Force Stop" : {
+      "extractionState" : "stale",
+      "localizations" : {
+        "id" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Paksa Berhenti"
+          }
+        }
+      }
+    },
     "Fuel the Development" : {
       "extractionState" : "stale",
       "localizations" : {
@@ -770,8 +792,15 @@
         }
       }
     },
-    "Hai, saya Nunu, developer tunggal di balik PingChekker. Aplikasi ini saya buat dari passion untuk teknologi. Dukungan Anda sangat berarti untuk menjaga aplikasi ini tetap gratis, bebas iklan, dan terus berkembang dengan fitur-fitur baru. Setiap traktiran kopi dari Anda memberi saya energi dan motivasi untuk terus berkarya!" : {
-
+    "Hi, I'm Nunu, the sole developer behind PingChekker. I built this app out of passion for technology. Your support means the world to keep this app free, ad-free, and constantly evolving with new features. Every coffee you buy gives me the energy and motivation to keep creating!" : {
+      "localizations" : {
+        "id" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Hai, saya Nunu, developer tunggal di balik PingChekker. Aplikasi ini saya buat dari passion untuk teknologi. Dukungan Anda sangat berarti untuk menjaga aplikasi ini tetap gratis, bebas iklan, dan terus berkembang dengan fitur-fitur baru. Setiap traktiran kopi dari Anda memberi saya energi dan motivasi untuk terus berkarya!"
+          }
+        }
+      }
     },
     "Indonesia (Saweria / QRIS)" : {
       "extractionState" : "stale",
@@ -795,7 +824,14 @@
       }
     },
     "Interface" : {
-
+      "localizations" : {
+        "id" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Antarmuka"
+          }
+        }
+      }
     },
     "International (Ko-fi / PayPal)" : {
       "extractionState" : "stale",
@@ -829,7 +865,14 @@
       }
     },
     "Local IP" : {
-
+      "localizations" : {
+        "id" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "IP Lokal"
+          }
+        }
+      }
     },
     "Menganalisa jaringan..." : {
       "localizations" : {
@@ -977,6 +1020,17 @@
     "Pause Monitoring" : {
 
     },
+    "Paused" : {
+      "extractionState" : "stale",
+      "localizations" : {
+        "id" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Dijeda"
+          }
+        }
+      }
+    },
     "PingChekker %@" : {
 
     },
@@ -1116,7 +1170,14 @@
       }
     },
     "Select an item" : {
-
+      "localizations" : {
+        "id" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Pilih item"
+          }
+        }
+      }
     },
     "Session Avg: %.0f ms" : {
 
@@ -1176,7 +1237,14 @@
       }
     },
     "Standard" : {
-
+      "localizations" : {
+        "id" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Standar"
+          }
+        }
+      }
     },
     "STARTING..." : {
       "extractionState" : "stale",
@@ -1221,7 +1289,24 @@
       }
     },
     "Support Developer (Donate)" : {
-
+      "localizations" : {
+        "id" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Dukung Developer (Donasi)"
+          }
+        }
+      }
+    },
+    "Support Indie Developer" : {
+      "localizations" : {
+        "id" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Dukung Developer Indie"
+          }
+        }
+      }
     },
     "Support Us" : {
       "extractionState" : "stale",
@@ -1245,7 +1330,14 @@
       }
     },
     "Target: %@" : {
-
+      "localizations" : {
+        "id" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Target: %@"
+          }
+        }
+      }
     },
     "Thank you for being awesome! ❤️" : {
       "localizations" : {
@@ -1278,12 +1370,6 @@
         }
       }
     },
-    "Traktir di Buy Me a Coffee" : {
-
-    },
-    "Traktir di Saweria" : {
-
-    },
     "Treat me Cendol" : {
       "extractionState" : "stale",
       "localizations" : {
@@ -1295,8 +1381,35 @@
         }
       }
     },
+    "Treat on Buy Me a Coffee" : {
+      "localizations" : {
+        "id" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Traktir di Buy Me a Coffee"
+          }
+        }
+      }
+    },
+    "Treat on Saweria" : {
+      "localizations" : {
+        "id" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Traktir di Saweria"
+          }
+        }
+      }
+    },
     "Tx Rate" : {
-
+      "localizations" : {
+        "id" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Kecepatan Tx"
+          }
+        }
+      }
     },
     "UNKNOWN" : {
       "extractionState" : "stale",
@@ -1305,6 +1418,17 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "TIDAK DIKETAHUI"
+          }
+        }
+      }
+    },
+    "Unknown WiFi" : {
+      "extractionState" : "stale",
+      "localizations" : {
+        "id" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "WiFi Tidak Diketahui"
           }
         }
       }

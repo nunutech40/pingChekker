@@ -23,10 +23,10 @@ struct SupportMeView: View {
                         .shadow(radius: 5)
                         .padding(.top, 20)
                     
-                    Text("Dukung Developer Indie") // Key
+                    Text("Support Indie Developer") // Key
                         .font(.title2.bold())
                     
-                    Text("Hai, saya Nunu, developer tunggal di balik PingChekker. Aplikasi ini saya buat dari passion untuk teknologi. Dukungan Anda sangat berarti untuk menjaga aplikasi ini tetap gratis, bebas iklan, dan terus berkembang dengan fitur-fitur baru. Setiap traktiran kopi dari Anda memberi saya energi dan motivasi untuk terus berkarya!") // Key
+                    Text("Hi, I'm Nunu, the sole developer behind PingChekker. I built this app out of passion for technology. Your support means the world to keep this app free, ad-free, and constantly evolving with new features. Every coffee you buy gives me the energy and motivation to keep creating!") // Key
                         .font(.callout)
                         .multilineTextAlignment(.center)
                         .foregroundColor(.secondary)
@@ -42,7 +42,7 @@ struct SupportMeView: View {
                 VStack(spacing: 15) {
                     // Opsi 1: Saweria
                     Link(destination: URL(string: "https://saweria.co/nunugraha17")!) {
-                        Label("Traktir di Saweria", systemImage: "sparkles")
+                        Label("Treat on Saweria", systemImage: "sparkles")
                             .font(.headline)
                             .padding()
                             .frame(maxWidth: .infinity)
@@ -55,7 +55,7 @@ struct SupportMeView: View {
                     
                     // Opsi 2: Buy Me a Coffee
                     Link(destination: URL(string: "https://www.buymeacoffee.com/nunutech401")!) {
-                        Label("Traktir di Buy Me a Coffee", systemImage: "mug.fill")
+                        Label("Treat on Buy Me a Coffee", systemImage: "mug.fill")
                             .font(.headline)
                             .padding()
                             .frame(maxWidth: .infinity)
