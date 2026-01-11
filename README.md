@@ -1,142 +1,101 @@
 # PingChekker 📡
 
-PingChekker adalah utilitas native macOS yang digunakan untuk memonitor kualitas koneksi internet secara realtime. Berbeda dengan perintah ping biasa di terminal, PingChekker menerjemahkan data latensi mentah menjadi status yang mudah dipahami (misalnya: "Elite", "Bagus", "Lag") dan menampilkan stabilitas jaringan melalui antarmuka bergaya widget yang ringkas.
-</br>
-<img width="483" height="256" alt="Screenshot 2025-12-02 at 14 29 31" src="https://github.com/user-attachments/assets/476522fc-6483-447e-a2ae-7ea6bdbb0124" />
-</br>
-<img width="652" height="480" alt="Screenshot 2025-12-02 at 14 29 37" src="https://github.com/user-attachments/assets/66235b83-1eda-48b0-98ce-ed67339645d6" />
+PingChekker adalah utilitas native macOS yang dirancang untuk memantau kualitas koneksi internet secara realtime dengan pendekatan yang visual dan mudah dipahami. Tidak hanya menampilkan angka ping mentah, aplikasi ini menerjemahkan data teknis menjadi wawasan yang dapat ditindaklanjuti untuk gamer, pekerja remote, dan streamer.
 
+<p align="center">
+  <img width="480" src="https://github.com/user-attachments/assets/476522fc-6483-447e-a2ae-7ea6bdbb0124" alt="PingChekker Dashboard" />
+</p>
 
-## 🥇 Fitur Utama
-- **Latency Realtime + Status Visual**  
-  Menampilkan latency (ms) secara langsung dan mengkategorikannya menjadi status seperti *ELITE*, *GOOD*, atau *SLOW*.
-  
-- **Skor Kualitas MOS (1.0 – 5.0)**  
-  Memberikan Mean Opinion Score lengkap dengan penjelasan manusiawi seperti *"Sangat aman untuk Zoom"* atau *"Game akan terasa laggy"*.
+## 🎯 Tujuan Aplikasi
+Aplikasi ini dibuat untuk menjawab pertanyaan sederhana: *"Kenapa internet saya terasa lambat?"*
+PingChekker membantu pengguna untuk:
+- Mengetahui **stabilitas** koneksi (bukan hanya kecepatan download).
+- Mendeteksi **Jitter** (variasi ping) yang menyebabkan lag pada game online.
+- Mengukur **MOS (Mean Opinion Score)** untuk memprediksi kualitas panggilan suara/video (Zoom, Google Meet).
+- Memantau riwayat performa jaringan dari waktu ke waktu.
 
-## 🛠️ Fitur Tambahan
-- **Riwayat Pemantauan (Network History)**  
-  Menyimpan log setiap sesi berdasarkan Host, SSID, dan BSSID untuk melihat pola kualitas jaringan.
-  
-- **Detail Wi-Fi Lengkap**  
-  Menampilkan SSID, BSSID, dan kekuatan sinyal (RSSI).
+## 🚀 Cara Penggunaan
+1. **Buka Aplikasi**: PingChekker akan otomatis memulai pemantauan ke server target (Default: Google DNS 8.8.8.8).
+2. **Lihat Dashboard**:
+   - **Speedometer**: Menunjukkan latensi realtime.
+   - **Indikator Kualitas**: Status verbal seperti *ELITE*, *STABLE*, atau *LAGGY*.
+   - **MOS Score**: Skor 1-5 yang menunjukkan kelayakan jaringan untuk VoIP/Gaming.
+3. **Menu Bar**: Pantau status jaringan langsung dari menu bar macOS tanpa membuka jendela utama.
+4. **Settings (Pengaturan)**:
+   - **Network History**: Lihat log performa jaringan sebelumnya.
+   - **WiFi Details**: Cek kekuatan sinyal (RSSI), channel, dan noise level.
+   - **Custom Host**: Ubah target ping ke server pilihan Anda (misal: server game tertentu).
 
-- **Menu Bar Support**  
-  Akses cepat kualitas jaringan langsung dari macOS Menu Bar.
+## ✨ Fitur Utama
+### 1. Monitoring Realtime & Visualisasi
+- **Smart Speedometer**: Visualisasi latensi dengan kode warna (Hijau = Bagus, Merah = Buruk).
+- **Human-Readable Status**: Menerjemahkan angka teknis menjadi bahasa manusia (contoh: *"Perfect for Gaming"* atau *"Severe Disruption"*).
 
-## ✨ Keunggulan Desain
-- **Native, Ringan, dan Cepat**  
-  Dibangun dengan SwiftUI untuk performa dan integrasi maksimal dengan macOS.
+### 2. Analisis Kualitas Jaringan (QoS)
+- **Jitter Detection**: Mendeteksi ketidakstabilan koneksi.
+- **MOS Calculation**: Menghitung skor kualitas suara berdasarkan standar ITU-T G.107.
+- **Packet Loss Tracker**: Memantau paket data yang hilang.
 
-- **Finalisasi Sesi Otomatis**  
-  Menggunakan logika BSSID + Core Data agar sesi monitoring disimpan dengan rapi ketika jaringan berubah atau aplikasi ditutup.
+### 3. Utilitas Jaringan Lanjutan
+- **Network History**: Menyimpan riwayat sesi secara otomatis menggunakan **Core Data**. Riwayat dikelompokkan berdasarkan nama jaringan (SSID) dan Host.
+- **WiFi Analyzer**: Menampilkan detail teknis WiFi seperti BSSID, RSSI, Tx Rate, dan Security Protocol.
 
-## 🛠 Cara Kerja
-PingChekker bekerja menggunakan mekanisme mikro dan makro untuk menghasilkan data yang stabil dan akurat.
+### 4. Integrasi macOS
+- **Menu Bar App**: Ikon status dinamis di menu bar.
+- **Native SwiftUI**: Tampilan modern, ringan, dan responsif.
+- **Multi-Language**: Mendukung Bahasa Indonesia dan Inggris secara penuh.
 
-### Mekanisme Mikro
-Menggunakan SimplePing untuk mengirim ICMP packet ke 8.8.8.8 tiap 1 detik, lalu mengukur latency.
+## 🛠️ Teknologi yang Digunakan
+Aplikasi ini dibangun menggunakan teknologi native Apple untuk performa maksimal:
 
-### Mekanisme Makro (Buffer 10 detik)
-- Mengumpulkan sampel ping (default 10)
-- Menghitung:
-  - Rata-rata Latency
-  - Jitter (incremental)
-  - Packet Loss
-- Session Average diperbarui tiap 1 menit
+- **Bahasa Pemrograman**: Swift 5.0
+- **UI Framework**: SwiftUI (MVVM Architecture).
+- **Networking**: 
+  - **SimplePing**: Wrapper untuk ICMP ping level rendah.
+  - **Network Framework**: Untuk pemantauan status koneksi global.
+  - **CoreWLAN**: Untuk mengambil detail informasi WiFi (SSID, RSSI, Noise).
+- **Data Persistence**: Core Data (Penyimpanan riwayat sesi).
+- **Localization**: String Catalogs (.xcstrings) untuk dukungan multi-bahasa.
 
-## 📏 Definisi & Cara Perhitungan
+## 📐 Arsitektur & Cara Kerja
+PingChekker menggunakan pola **MVVM (Model-View-ViewModel)** untuk memisahkan logika bisnis dari tampilan antarmuka.
 
-## Flow Use Simple Ping to Send Ping and Get return as ms.
-</br>
-<img width="424" height="1022" alt="Use Ping Simple Work Flow" src="https://github.com/user-attachments/assets/7803d996-85f6-4e57-afa1-ca7a0c355e35" />
+### Mekanisme Ping
+1. **Mikro (Detik)**: Mengirim paket ICMP setiap detik untuk mendapatkan latensi instan.
+2. **Makro (Agregat)**: Mengumpulkan sampel setiap 10 detik untuk menghitung Jitter dan Packet Loss.
+3. **Sesi**: Data dirata-rata setiap menit dan disimpan ke Core Data jika terjadi perubahan jaringan atau aplikasi ditutup.
 
+<details>
+<summary>Lihat Diagram Alur (Flowchart)</summary>
 
-### Latency (ms)
-Waktu pulang–pergi paket (RTT).
-</br>
-<img width="462" height="1359" alt="Get Latency - RealTime" src="https://github.com/user-attachments/assets/fdae4fa9-a6d7-4c23-9a11-86c7bc612200" />
+#### Flow MOS Calculation
+<img src="https://github.com/user-attachments/assets/0153f646-509e-4cef-9c11-5bb3e8073805" alt="MOS Flow" width="600"/>
 
-Rumus:
-```
-latency = (receivedTime - sendTime) * 1000
-```
-Kode:
-```swift
-let latency = Date().timeIntervalSince(sendDate) * 1000
-```
+#### Flow Jitter Calculation
+<img src="https://github.com/user-attachments/assets/82313bb0-e93a-4cc2-aebb-349c31756124" alt="Jitter Flow" width="600"/>
 
-### Jitter (ms)
-Variasi antar ping.
-</br>
-<img width="1057" height="913" alt="FlowChart - Get Jitter" src="https://github.com/user-attachments/assets/82313bb0-e93a-4cc2-aebb-349c31756124" />
+</details>
 
-Rumus sederhana:
-```
-jitter = rata-rata(|latency[i] - latency[i-1]|)
-```
-Kode incremental:
-```swift
-if let prev = previousLatency {
-    jitterSum += abs(latency - prev)
-}
-```
+## 📦 Instalasi & Pengembangan
 
-### Packet Loss (%)
-Persentase paket yang tidak dibalas.
-</br>
-<img width="290" height="1166" alt="FlowChart - Get PacketLoss" src="https://github.com/user-attachments/assets/1cdfb8f2-7dd3-458d-8ae0-837338f10f93" />
+### Persyaratan Sistem
+- macOS 12.0 (Monterey) atau lebih baru.
+- Xcode 14.0+ (untuk pengembangan).
 
-```
-loss = ((sent - received) / sent) * 100
-```
-
-### Session Average (ms)
-Rata-rata latency jangka panjang (update tiap 1 menit).
-
-```
-cachedSessionAvg = totalSessionLatency / totalSessionCount
-```
-### Hitung MOS (%)
-MOS adalah skor kualitas koneksi 1.0–5.0 berdasarkan standar **ITU-T G.107 (E-Model)**.
-PingChekker menghitung MOS menggunakan tiga parameter utama: **latency**, **jitter**, dan **packet loss**.
-</br>
-<img width="1225" height="2386" alt="GET MOS - FLOW" src="https://github.com/user-attachments/assets/0153f646-509e-4cef-9c11-5bb3e8073805" />
-
-
-## 🧠 Arsitektur
-
-Mengikuti MVVM:
-- Core/
-- Features/InternetMonitor/
-- App/
-
-## 💻 Teknologi
-- Swift
-- SwiftUI
-- CFNetwork + SimplePing
-- macOS 12+
-- CoreWLAN
-- Firebase:
-  * Remote Config
-
-## Flow Chart Fitur Lengkap
-https://whimsical.com/get-mos-flow-SgGMfTBtGZqEUAmzvAkLMx
-
-## 📦 Instalasi
-```
-git clone https://github.com/yourusername/PingChekker.git
-open PingChekker.xcodeproj
-```
-
-Aktifkan:
-- App Sandbox
-- Outgoing Connections
-
-Jalankan:
-```
-Cmd + R
-```
+### Langkah Instalasi
+1. Clone repositori ini:
+   ```bash
+   git clone https://github.com/yourusername/PingChekker.git
+   ```
+2. Buka project di Xcode:
+   ```bash
+   open PingChekker.xcodeproj
+   ```
+3. Pastikan **App Sandbox** dikonfigurasi untuk mengizinkan "Outgoing Connections (Client)".
+4. Jalankan aplikasi (Cmd + R).
 
 ## 📝 Lisensi
-MIT License.
+PingChekker dilisensikan di bawah MIT License.
+
+---
+**Dibuat dengan ❤️ oleh Nunu Nugraha**
