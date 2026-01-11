@@ -103,14 +103,19 @@ private extension SettingsView {
             switch panel {
             case .about:
                 AboutView()
+                    .id(panel) // Force Redraw
             case .support:
                 SupportMeView()
+                    .id(panel)
             case .host:
                 HostSettingsView()
+                    .id(panel)
             case .wifiDetail:
                 WifiDetailView()
+                    .id(panel)
             case .history:
                 HistoryView()
+                    .id(panel)
             }
         } else {
             ContentUnavailableView("Select an item", systemImage: "sidebar.left")

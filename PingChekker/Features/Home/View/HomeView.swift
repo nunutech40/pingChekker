@@ -38,11 +38,28 @@ struct HomeView: View {
             
             // 3. Settings Button (Pojok Kanan Atas)
             VStack {
-                HStack {
+                HStack(spacing: 12) {
                     Spacer()
+                    
+                    // Button Pause/Play
+                    Button(action: {
+                        withAnimation {
+                            viewModel.toggleMonitoring()
+                        }
+                    }) {
+                        Image(systemName: viewModel.isPaused ? "play.fill" : "pause.fill")
+                            .font(.system(size: 12))
+                            .foregroundColor(.secondary.opacity(0.8))
+                            .contentShape(Rectangle())
+                    }
+                    .buttonStyle(.plain)
+                    .help(viewModel.isPaused ? "Resume Monitoring" : "Pause Monitoring")
+                    
                     settingsButton
-                        .padding([.top, .trailing], 10)
+                        .padding(.trailing, 10)
                 }
+                .padding(.top, 10)
+                
                 Spacer()
             }
             .ignoresSafeArea()

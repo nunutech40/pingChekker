@@ -34,6 +34,7 @@ class HomeViewModel: ObservableObject {
     // Footer / Misc
     @Published var sessionAvgText: String = "-"
     @Published var isOffline: Bool = false
+    @Published var isPaused: Bool = false
     
     // ==========================================
     // MARK: - LOGIC PROPERTIES
@@ -49,6 +50,8 @@ class HomeViewModel: ObservableObject {
     
     // TRACKER IDENTITAS ROUTER
     private var currentSessionBSSID: String?
+    private var currentSessionSSID: String?
+    private var currentSessionHost: String?
     
     // ==========================================
     // MARK: - INIT & BINDING
@@ -323,10 +326,26 @@ extension HomeViewModel {
     
     // Fungsi ini dipanggil manual (misal tombol Stop atau Quit App)
     func forceStopSession() {
-
         // Panggil logic finalize yang udah ada
         handleError(msg: "Force Stop")
         // Matikan mesin
         service.stopMonitoring()
+    }
+    
+    func toggleMonitoring() {
+        if isPaused {
+            // RESUME
+            handleStartSignal()
+            isPaused = false
+        } else {
+            // PAUSE
+            forceStopSession()
+            // Override status offline jadi paused biar UI lebih jelas (opsional)
+            self.statusMessage = "Paused"
+            self.categoryText = "PAUSED"
+            self.statusColor = .gray
+            self.latencyText = "||"
+            self.isPaused = true
+        }
     }
 }

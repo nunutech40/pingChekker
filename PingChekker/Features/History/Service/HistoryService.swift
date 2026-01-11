@@ -57,65 +57,76 @@ class HistoryService {
         var activeID: UUID?
         let netInfo = self.getNetworkDetails()
         
-        // --- 1. DEFINISIKAN PREDICATE KETAT SEBAGAI DEFAULT ---
-        // Default: Host + BSSID + SSID (Logika awal Anda untuk jaringan stabil)
-        var predicate = NSPredicate(
-            format: "host == %@ AND bssid == %@ AND networkName == %@",
-            host,
-            netInfo.bssid,
-            netInfo.ssid
-        )
+        // --- LOGIC BARU: PENCARIAN LEBIH PINTAR (SMART RESUME) ---
+        // Alih-alih mencocokkan BSSID secara ketat (yang bikin duplikat kalau roaming/dual-band),
+        // Kita cari berdasarkan HOST + SSID dulu, lalu cek waktunya.
         
-        // --- 2. KONDISI PELONGGARAN BSSID ---
-        // Cek apakah ini Hotspot Pribadi (iPhone) atau jaringan Wired/Unknown.
-        // Hotspot/iPhone: BSSID-nya sering rotasi (berubah).
-        // Wired/Unknown: BSSID tidak valid ("-" atau "00:00:00...").
-        let isLikelyUnstableBSSID: Bool = {
-            let ssid = netInfo.ssid.localizedCaseInsensitiveContains("iphone") ||
-            netInfo.ssid.localizedCaseInsensitiveContains("hotspot")
+        context.performAndWait {
+            let request: NSFetchRequest<NetworkHistory> = NetworkHistory.fetchRequest()
             
-            let bssidInvalid = netInfo.bssid == "-" || netInfo.bssid.prefix(2) == "00"
-            
-            return ssid || bssidInvalid
-        }()
-        
-        if isLikelyUnstableBSSID {
-            // Jika BSSID tidak stabil: HANYA CEK HOST + SSID.
-            // Ini akan memastikan sesi Hotspot/Wired berlanjut sebagai SATU entri,
-            // meskipun BSSID-nya berubah setiap saat.
-            predicate = NSPredicate(
+            // 1. Cari berdasarkan Host & SSID saja (abaikan BSSID dulu)
+            request.predicate = NSPredicate(
                 format: "host == %@ AND networkName == %@",
                 host,
                 netInfo.ssid
             )
-        }
-        
-        // --- 3. EKSEKUSI PENCARIAN ---
-        context.performAndWait {
-            let request: NSFetchRequest<NetworkHistory> = NetworkHistory.fetchRequest()
-            request.predicate = predicate // Menggunakan predicate yang sudah dipilih
+            
+            // 2. AMBIL YANG PALING BARU (PENTING!)
+            // Tanpa ini, kita bisa mengambil history tahun lalu secara acak.
+            request.sortDescriptors = [NSSortDescriptor(key: "timestamp", ascending: false)]
             request.fetchLimit = 1
             
             do {
                 let results = try context.fetch(request)
+                let existingLog = results.first
                 
-                if let existingLog = results.first {
-                    // Router SAMA (Lanjut Sesi / Resume)
-                    existingLog.timestamp = Date()
-                    existingLog.status = "Monitoring..."
-                    activeID = existingLog.id
+                // 3. TENTUKAN APAKAH BOLEH RESUME?
+                var shouldResume = false
+                
+                if let log = existingLog, let logDate = log.timestamp {
+                    // Hitung selisih waktu dari terakhir kali sesi itu aktif
+                    let timeGap = Date().timeIntervalSince(logDate)
+                    
+                    // Batas waktu toleransi untuk resume (misal: 6 Jam).
+                    // Jika user kembali dalam 6 jam, kita anggap masih sesi yang sama (resume).
+                    // Jika lebih dari 6 jam, kita anggap sesi baru (misal: kerja pagi vs lembur malam).
+                    let resumeThreshold: TimeInterval = 6 * 60 * 60 // 6 Jam
+                    
+                    if timeGap < resumeThreshold {
+                        shouldResume = true
+                    }
+                }
+                
+                if shouldResume, let log = existingLog {
+                    // --- RESUME SESSION ---
+                    // Update timestamp biar naik ke paling atas
+                    log.timestamp = Date()
+                    log.status = "Monitoring..."
+                    
+                    // Update BSSID ke yang terbaru (menangani kasus roaming Mesh WiFi)
+                    // Jadi kalau pindah dari Lt1 ke Lt2, history-nya tetap satu, tapi BSSID-nya update.
+                    log.bssid = netInfo.bssid
+                    
+                    activeID = log.id
+                    
+                    // Debug Log
+                    print("[HistoryService] Resuming session: \(log.networkName ?? "?") (Gap: \(String(format: "%.0fs", Date().timeIntervalSince(log.timestamp ?? Date()))))")
+                    
                 } else {
-                    // Router BEDA (Bikin Baru)
+                    // --- CREATE NEW SESSION ---
+                    // Karena tidak ada history, atau history terakhir sudah terlalu lama (basi).
                     let newLog = NetworkHistory(context: context)
                     activeID = UUID()
                     newLog.id = activeID
                     newLog.timestamp = Date()
                     newLog.host = host
                     newLog.networkName = netInfo.ssid
-                    newLog.bssid = netInfo.bssid // Simpan BSSID yang ada (meskipun rotasi)
+                    newLog.bssid = netInfo.bssid
                     newLog.latency = 0.0
                     newLog.mos = 0.0
                     newLog.status = "Monitoring..."
+                    
+                    print("[HistoryService] Creating NEW session: \(netInfo.ssid)")
                 }
                 
                 if context.hasChanges {

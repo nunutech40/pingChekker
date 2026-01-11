@@ -1,5 +1,5 @@
 //
-//  SupportMe.swift
+//  SupportMeView.swift
 //  PingChekker
 //
 //  Created by Nunu Nugraha on 30/11/25.
@@ -14,24 +14,19 @@ struct SupportMeView: View {
                 
                 // 1. Hero Section
                 VStack(spacing: 16) {
-                    Image(systemName: "heart.fill")
+                    Image(systemName: "person.crop.circle.fill")
                         .resizable()
-                        .aspectRatio(contentMode: .fit)
-                        .frame(width: 60, height: 60)
-                        .foregroundStyle(
-                            LinearGradient(
-                                colors: [.pink, .red],
-                                startPoint: .topLeading,
-                                endPoint: .bottomTrailing
-                            )
-                        )
-                        .symbolEffect(.bounce, value: true)
+                        .aspectRatio(contentMode: .fill)
+                        .frame(width: 100, height: 100)
+                        .clipShape(Circle())
+                        .overlay(Circle().stroke(Color.gray.opacity(0.3), lineWidth: 2))
+                        .shadow(radius: 5)
                         .padding(.top, 20)
                     
-                    Text("Fuel the Development") // Key
+                    Text("Dukung Developer Indie") // Key
                         .font(.title2.bold())
                     
-                    Text("PingChekker is an indie project built with passion. Your support helps keep the app ad-free and constantly updated with new features.") // Key
+                    Text("Hai, saya Nunu, developer tunggal di balik PingChekker. Aplikasi ini saya buat dari passion untuk teknologi. Dukungan Anda sangat berarti untuk menjaga aplikasi ini tetap gratis, bebas iklan, dan terus berkembang dengan fitur-fitur baru. Setiap traktiran kopi dari Anda memberi saya energi dan motivasi untuk terus berkarya!") // Key
                         .font(.callout)
                         .multilineTextAlignment(.center)
                         .foregroundColor(.secondary)
@@ -44,26 +39,32 @@ struct SupportMeView: View {
                     .padding(.vertical, 10)
                 
                 // 2. Donation Options
-                VStack(spacing: 12) {
-                    // GANTI URL DI BAWAH INI DENGAN LINK ASLI LO
+                VStack(spacing: 15) {
+                    // Opsi 1: Saweria
+                    Link(destination: URL(string: "https://saweria.co/nunugraha17")!) {
+                        Label("Traktir di Saweria", systemImage: "sparkles")
+                            .font(.headline)
+                            .padding()
+                            .frame(maxWidth: .infinity)
+                            .background(Color.orange)
+                            .foregroundColor(.white)
+                            .cornerRadius(10)
+                            .shadow(color: .orange.opacity(0.4), radius: 5, y: 2)
+                    }
+                    .buttonStyle(.plain)
                     
-                    // Opsi 1: Global (Ko-fi / PayPal)
-                    SupportButtonLink(
-                        url: "https://ko-fi.com", // Ganti link
-                        title: "Buy me a Coffee", // Key
-                        subtitle: "International (Ko-fi / PayPal)", // Key
-                        icon: "cup.and.saucer.fill",
-                        color: .brown
-                    )
-                    
-                    // Opsi 2: Lokal (Saweria / Trakteer)
-                    SupportButtonLink(
-                        url: "https://saweria.co", // Ganti link
-                        title: "Treat me Cendol", // Key
-                        subtitle: "Indonesia (Saweria / QRIS)", // Key
-                        icon: "qrcode",
-                        color: .green
-                    )
+                    // Opsi 2: Buy Me a Coffee
+                    Link(destination: URL(string: "https://www.buymeacoffee.com/nunutech401")!) {
+                        Label("Traktir di Buy Me a Coffee", systemImage: "mug.fill")
+                            .font(.headline)
+                            .padding()
+                            .frame(maxWidth: .infinity)
+                            .background(Color.yellow)
+                            .foregroundColor(.black)
+                            .cornerRadius(10)
+                            .shadow(color: .yellow.opacity(0.4), radius: 5, y: 2)
+                    }
+                    .buttonStyle(.plain)
                 }
                 .frame(maxWidth: 350)
                 
@@ -80,65 +81,7 @@ struct SupportMeView: View {
     }
 }
 
-// Komponen Tombol Support (Reusable)
-struct SupportButtonLink: View {
-    let url: String
-    let title: LocalizedStringKey
-    let subtitle: LocalizedStringKey
-    let icon: String
-    let color: Color
-    
-    var body: some View {
-        Link(destination: URL(string: url)!) {
-            HStack(spacing: 16) {
-                // Icon Circle
-                ZStack {
-                    Circle()
-                        .fill(color.opacity(0.1))
-                        .frame(width: 48, height: 48)
-                    Image(systemName: icon)
-                        .font(.system(size: 20))
-                        .foregroundColor(color)
-                }
-                
-                // Text
-                VStack(alignment: .leading, spacing: 2) {
-                    Text(title)
-                        .font(.headline)
-                        .foregroundColor(.primary)
-                    Text(subtitle)
-                        .font(.caption)
-                        .foregroundColor(.secondary)
-                }
-                
-                Spacer()
-                
-                // External Link Arrow
-                Image(systemName: "arrow.up.right")
-                    .font(.caption)
-                    .foregroundColor(.secondary.opacity(0.5))
-            }
-            .padding(12)
-            .background(
-                RoundedRectangle(cornerRadius: 16)
-                    .fill(Color.primary.opacity(0.04))
-                    .overlay(
-                        RoundedRectangle(cornerRadius: 16)
-                            .stroke(Color.primary.opacity(0.05), lineWidth: 1)
-                    )
-            )
-            .contentShape(Rectangle()) // Biar bisa diklik di area kosong
-        }
-        .buttonStyle(.plain)
-        // Efek Hover biar kerasa interaktif
-        .onHover { isHovering in
-            if isHovering { NSCursor.pointingHand.push() }
-            else { NSCursor.pop() }
-        }
-    }
-}
-
 #Preview {
     SupportMeView()
-        .frame(width: 500, height: 400)
+        .frame(width: 500, height: 500)
 }

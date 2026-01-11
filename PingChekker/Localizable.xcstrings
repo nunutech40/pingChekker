@@ -471,6 +471,7 @@
       }
     },
     "Buy me a Coffee" : {
+      "extractionState" : "stale",
       "localizations" : {
         "id" : {
           "stringUnit" : {
@@ -552,6 +553,9 @@
           }
         }
       }
+    },
+    "Created by Nunu Nugraha" : {
+
     },
     "Created out of frustration with unstable internet.\nRuthless latency & jitter monitoring." : {
       "localizations" : {
@@ -686,6 +690,9 @@
         }
       }
     },
+    "Dukung Developer Indie" : {
+
+    },
     "ELITE" : {
       "extractionState" : "stale",
       "localizations" : {
@@ -731,6 +738,7 @@
       }
     },
     "Fuel the Development" : {
+      "extractionState" : "stale",
       "localizations" : {
         "id" : {
           "stringUnit" : {
@@ -762,7 +770,11 @@
         }
       }
     },
+    "Hai, saya Nunu, developer tunggal di balik PingChekker. Aplikasi ini saya buat dari passion untuk teknologi. Dukungan Anda sangat berarti untuk menjaga aplikasi ini tetap gratis, bebas iklan, dan terus berkembang dengan fitur-fitur baru. Setiap traktiran kopi dari Anda memberi saya energi dan motivasi untuk terus berkarya!" : {
+
+    },
     "Indonesia (Saweria / QRIS)" : {
+      "extractionState" : "stale",
       "localizations" : {
         "id" : {
           "stringUnit" : {
@@ -786,6 +798,7 @@
 
     },
     "International (Ko-fi / PayPal)" : {
+      "extractionState" : "stale",
       "localizations" : {
         "id" : {
           "stringUnit" : {
@@ -961,10 +974,14 @@
         }
       }
     },
-    "PingChekker" : {
+    "Pause Monitoring" : {
+
+    },
+    "PingChekker %@" : {
 
     },
     "PingChekker is an indie project built with passion. Your support helps keep the app ad-free and constantly updated with new features." : {
+      "extractionState" : "stale",
       "localizations" : {
         "id" : {
           "stringUnit" : {
@@ -1203,6 +1220,9 @@
         }
       }
     },
+    "Support Developer (Donate)" : {
+
+    },
     "Support Us" : {
       "extractionState" : "stale",
       "localizations" : {
@@ -1258,7 +1278,14 @@
         }
       }
     },
+    "Traktir di Buy Me a Coffee" : {
+
+    },
+    "Traktir di Saweria" : {
+
+    },
     "Treat me Cendol" : {
+      "extractionState" : "stale",
       "localizations" : {
         "id" : {
           "stringUnit" : {
@@ -1292,9 +1319,6 @@
           }
         }
       }
-    },
-    "Version 1.0.0 (Alpha)" : {
-
     },
     "Waiting for data..." : {
       "extractionState" : "stale",
